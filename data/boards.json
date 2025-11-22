@@ -1,0 +1,73 @@
+[
+  {
+    "id": "board-1",
+    "title": "Operating Systems - Sem 4",
+    "description": "Learn OS fundamentals including processes, memory management, and file systems",
+    "createdAt": "2025-11-21T08:17:48.543Z",
+    "updatedAt": "2025-11-21T08:17:48.549Z"
+  },
+  {
+    "id": "board-2",
+    "title": "Data Structures & Algorithms",
+    "description": "Master DSA concepts and problem-solving techniques",
+    "createdAt": "2025-11-21T08:17:48.549Z",
+    "updatedAt": "2025-11-21T08:17:48.549Z"
+  },
+  {
+    "id": "board-1763716454209",
+    "title": "DSA",
+    "description": "DSA Basics -> Advanced",
+    "scheduleTime": "2025-11-21T14:44",
+    "createdAt": "2025-11-21T09:14:14.209Z",
+    "updatedAt": "2025-11-21T09:14:14.209Z"
+  },
+  {
+    "id": "board-1763724943391",
+    "title": "TOC",
+    "description": "Pumping Lemma",
+    "youtubeLinks": [
+      "https://youtu.be/WdmbZnUesRw?si=sROo2I5DyUu7yHZB"
+    ],
+    "scheduleTime": "2025-11-21T17:05",
+    "createdAt": "2025-11-21T11:35:43.391Z",
+    "updatedAt": "2025-11-21T11:35:43.391Z"
+  },
+  {
+    "id": "board-1763740402065",
+    "title": "OS",
+    "description": "Round Robin",
+    "youtubeLinks": [
+      "https://youtu.be/TxjIlNYRZ5M?si=5jAjRAXsQAC5G68w",
+      "https://youtu.be/-jFGYDfWkXI?si=kLSd01U_KG2pMS6R"
+    ],
+    "websiteLinks": [
+      "https://www.geeksforgeeks.org/operating-systems/round-robin-scheduling-in-operating-system/",
+      "https://stackoverflow.com/questions/79389/what-is-round-robin-scheduling"
+    ],
+    "scheduleTime": "2025-11-28T10:25",
+    "createdAt": "2025-11-21T15:53:22.066Z",
+    "updatedAt": "2025-11-21T15:53:22.066Z"
+  },
+  {
+    "id": "board-1763751031356",
+    "title": "DBMS",
+    "description": "Entity Relation Diagram(ERD)",
+    "youtubeLinks": [
+      "https://youtu.be/xsg9BDiwiJE?si=tphtYs6cZ_igyqAp"
+    ],
+    "scheduleTime": "2025-11-29T09:20",
+    "createdAt": "2025-11-21T18:50:31.356Z",
+    "updatedAt": "2025-11-21T18:50:31.356Z"
+  },
+  {
+    "id": "board-1763751323702",
+    "title": "Dynamic Programming",
+    "description": "Optimal substructure",
+    "youtubeLinks": [
+      "https://youtu.be/sWnBVPRA0yQ?si=y_nKDuULSf9OLGUM"
+    ],
+    "scheduleTime": "2025-11-29T05:30",
+    "createdAt": "2025-11-21T18:55:23.702Z",
+    "updatedAt": "2025-11-21T18:55:23.702Z"
+  }
+]

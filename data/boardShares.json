@@ -1,0 +1,72 @@
+[
+  {
+    "id": "share_1763755931737",
+    "boardId": "board-1",
+    "email": "inderkumarkulkarni@gmail.com",
+    "permissionLevel": "edit",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763755931737_u7rmng74k",
+    "createdAt": "2025-11-21T20:12:11.737Z",
+    "expiresAt": null
+  },
+  {
+    "id": "share_1763756702062",
+    "boardId": "board-2",
+    "email": "inderkumarkulkarni@gmail.com",
+    "permissionLevel": "edit",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763756702062_jc7lwf4a1",
+    "createdAt": "2025-11-21T20:25:02.062Z",
+    "expiresAt": null
+  },
+  {
+    "id": "share_1763757302200",
+    "boardId": "board-1",
+    "email": "navinmthd@gmail.com",
+    "permissionLevel": "read",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763757302200_547ynx30x",
+    "createdAt": "2025-11-21T20:35:02.200Z",
+    "expiresAt": null
+  },
+  {
+    "id": "share_1763757401545",
+    "boardId": "board-2",
+    "email": "navinmthd@gmail.com",
+    "permissionLevel": "read",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763757401545_3aqr46bh9",
+    "createdAt": "2025-11-21T20:36:41.545Z",
+    "expiresAt": null
+  },
+  {
+    "id": "share_1763758314249",
+    "boardId": "board-1763740402065",
+    "email": "inderkumarkulakarni@gmail.com",
+    "permissionLevel": "read",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763758314249_9scgzxy1f",
+    "createdAt": "2025-11-21T20:51:54.249Z",
+    "expiresAt": null
+  },
+  {
+    "id": "share_1763758861146",
+    "boardId": "board-2",
+    "email": "sarthakkalashetty23@gmail.com",
+    "permissionLevel": "edit",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763758861146_9ral3ff2b",
+    "createdAt": "2025-11-21T21:01:01.146Z",
+    "expiresAt": null
+  },
+  {
+    "id": "share_1763759667215",
+    "boardId": "board-2",
+    "email": "mallikarjunmarabasari@gmail.com",
+    "permissionLevel": "edit",
+    "sharedBy": "5252177c-13dc-4158-bc0d-10bcd4e4ee72",
+    "shareToken": "share_1763759667215_y2765r6r6",
+    "createdAt": "2025-11-21T21:14:27.215Z",
+    "expiresAt": null
+  }
+]
