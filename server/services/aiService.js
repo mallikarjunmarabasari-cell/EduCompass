@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import * as pdfParse from "pdf-parse";
 import fs from "fs";
 import path from "path";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+const { getTranscript } = require("youtube-transcript-api");
 
 dotenv.config();
 
@@ -16,17 +20,14 @@ const GEMINI_API_URL =
 const youtubeService = {
   async getTranscript(videoId) {
     try {
-      // This would require a real YouTube API key and a transcript extraction library
-      // For now, we'll use a placeholder that can be replaced with a real implementation
       console.log("📺 Fetching transcript for video:", videoId);
 
-      // You would typically use: youtube-transcript or similar library
-      // const { YoutubeTranscript } = require('youtube-transcript');
-      // const transcript = await YoutubeTranscript.fetchTranscript({ videoId });
-      // return transcript.map(t => t.text).join(' ');
+      // Fetch transcript using youtube-transcript-api library
+      const transcript = await getTranscript(videoId);
+      const transcriptText = transcript.map((t) => t.text).join(" ");
 
-      // Placeholder response
-      return `This is a placeholder transcript for video ${videoId}. In production, this would be fetched from YouTube API.`;
+      console.log("✅ Transcript fetched successfully");
+      return transcriptText;
     } catch (error) {
       console.error("Error fetching YouTube transcript:", error);
       throw new Error("Failed to fetch YouTube transcript");
@@ -94,7 +95,7 @@ async function extractPDFText(pdfPath) {
     const limitedText = extractedText.substring(0, 5000);
 
     console.log(
-      `✅ PDF text extracted successfully (${limitedText.length} characters)`
+      `✅ PDF text extracted successfully (${limitedText.length} characters)`,
     );
 
     return limitedText;
@@ -115,19 +116,19 @@ async function generateAIContent(content, contentType = "text") {
 
     // Generate summary
     const summaryResponse = await callGeminiAPI(
-      `Summarize the following ${contentType} in exactly 5 concise sentences:\n\n${content}`
+      `Summarize the following ${contentType} in exactly 5 concise sentences:\n\n${content}`,
     );
     const summary = summaryResponse;
 
     // Generate key points
     const keyPointsResponse = await callGeminiAPI(
-      `Extract 5 main takeaways from the following ${contentType} as bullet points:\n\n${content}`
+      `Extract 5 main takeaways from the following ${contentType} as bullet points:\n\n${content}`,
     );
     const keyPoints = parseKeyPoints(keyPointsResponse);
 
     // Generate flashcards
     const flashcardsResponse = await callGeminiAPI(
-      `Generate 5 Q&A pairs for revision based on the following ${contentType}. Format as JSON array with {question, answer} objects:\n\n${content}`
+      `Generate 5 Q&A pairs for revision based on the following ${contentType}. Format as JSON array with {question, answer} objects:\n\n${content}`,
     );
     const flashcards = parseFlashcards(flashcardsResponse);
 
@@ -169,7 +170,7 @@ async function callGeminiAPI(prompt) {
         headers: {
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {

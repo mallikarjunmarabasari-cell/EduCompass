@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 export function AuthCallbackPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user is authenticated

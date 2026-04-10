@@ -1,4 +1,4 @@
-import type { Resource, Board } from '../types';
+import type { Resource } from '../types';
 
 export function calculateBoardCompletion(resources: Resource[]): number {
   if (resources.length === 0) return 0;

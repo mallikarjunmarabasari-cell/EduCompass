@@ -4,12 +4,17 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
-// Load .env from project root
+// Load .env and then .env.local so local overrides root settings
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envPath = path.resolve(__dirname, "../../.env");
+const envLocalPath = path.resolve(__dirname, "../../.env.local");
 
 if (fs.existsSync(envPath)) {
   dotenv.config({ path: envPath });
+}
+
+if (fs.existsSync(envLocalPath)) {
+  dotenv.config({ path: envLocalPath, override: true });
 }
 
 const supabaseUrl = process.env.SUPABASE_URL;

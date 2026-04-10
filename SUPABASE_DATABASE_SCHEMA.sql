@@ -194,7 +194,7 @@ INSERT
   (EXISTS (
   SELECT 1
   FROM boards
-  WHERE boards.id = resources.board_
+  WHERE boards.id = resources.board_id
   AND auth.uid() = boards.user_id
   )
 );
@@ -484,7 +484,7 @@ INSERT
   (EXISTS (
   SELECT 1
   FROM boards
-  WHERE boards.id = board_shares.board_
+  WHERE boards.id = board_shares.board_id
   AND auth.uid() = boards.user_id
   )
 AND shared_by = auth.uid

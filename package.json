@@ -10,6 +10,7 @@
         "client:build": "tsc && vite build",
         "client:preview": "vite preview",
         "server:dev": "node server/index.js",
+        "start": "node server/index.js",
         "build": "npm run client:build",
         "preview": "npm run client:preview"
     },
@@ -31,7 +32,8 @@
         "react-chartjs-2": "^5.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.20.0",
-        "recharts": "^3.4.1"
+        "recharts": "^3.4.1",
+        "youtube-transcript-api": "^3.0.6"
     },
     "devDependencies": {
         "@types/express": "^4.17.21",
