@@ -2,8 +2,10 @@ import axios from 'axios';
 import type { Board, Resource, Assignment, AssignmentResult, SearchFilters, Tag } from '../types';
 import { supabase } from './supabase';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 const API = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE,
 });
 
 let cachedUserId: string | null = null;
