@@ -121,61 +121,95 @@ export function ResourceCard({
         )}
 
         {/* Multiple Links */}
-        {resource.urls && resource.urls.length > 0 && (
+        {(resource.urls && resource.urls.length > 0) || resource.url ? (
           <div className="space-y-2 p-2 bg-gray-100/50 dark:bg-gray-800/50 rounded">
-            <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Links ({resource.urls.length})</p>
-            <div className="space-y-1">
-              {resource.urls.map((link, index) => {
-                const isYouTube = link.includes('youtube.com') || link.includes('youtu.be');
-                const isPDF = link.includes('.pdf') || link.startsWith('/uploads/pdfs');
-                const isRelativePath = link.startsWith('/');
-                
-                // Get hostname for absolute URLs, or filename for relative paths
-                let displayName = link;
-                try {
-                  if (!isRelativePath && !isPDF) {
-                    displayName = new URL(link).hostname || link;
-                  } else if (isPDF) {
-                    displayName = '📄 PDF';
-                  } else {
-                    displayName = link.split('/').pop() || link;
-                  }
-                } catch (e) {
-                  // Fallback if URL parsing fails
-                  displayName = isPDF ? '📄 PDF' : link;
-                }
-                
-                return (
-                  <div key={index} className="flex items-center gap-1">
-                    {isYouTube ? (
-                      <button
-                        onClick={() => {
-                          setSelectedYoutubeUrl(link);
-                          setShowYoutubePreview(true);
-                        }}
-                        className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
-                        title="Click to preview"
-                      >
-                        <span className="text-xs">▶</span>
-                        <span className="truncate">YouTube</span>
-                      </button>
-                    ) : (
-                      <a
-                        href={link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 text-left text-xs px-2 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition truncate"
-                        title={link}
-                      >
-                        {displayName}
-                      </a>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {resource.urls && resource.urls.length > 0 ? (
+              <>
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Links ({resource.urls.length})</p>
+                <div className="space-y-1">
+                  {resource.urls.map((link, index) => {
+                    const isYouTube = link.includes('youtube.com') || link.includes('youtu.be');
+                    const isPDF = link.includes('.pdf') || link.startsWith('/uploads/pdfs');
+                    const isRelativePath = link.startsWith('/');
+                    
+                    // Get hostname for absolute URLs, or filename for relative paths
+                    let displayName = link;
+                    try {
+                      if (!isRelativePath && !isPDF) {
+                        displayName = new URL(link).hostname || link;
+                      } else if (isPDF) {
+                        displayName = '📄 PDF';
+                      } else {
+                        displayName = link.split('/').pop() || link;
+                      }
+                    } catch (e) {
+                      // Fallback if URL parsing fails
+                      displayName = isPDF ? '📄 PDF' : link;
+                    }
+                    
+                    return (
+                      <div key={index} className="flex items-center gap-1">
+                        {isYouTube ? (
+                          <button
+                            onClick={() => {
+                              setSelectedYoutubeUrl(link);
+                              setShowYoutubePreview(true);
+                            }}
+                            className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
+                            title="Click to preview"
+                          >
+                            <span className="text-xs">▶</span>
+                            <span className="truncate">YouTube</span>
+                          </button>
+                        ) : (
+                          <a
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 text-left text-xs px-2 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition truncate"
+                            title={link}
+                          >
+                            {displayName}
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              // Fallback to single resource.url if urls array is empty
+              <div className="space-y-1">
+                <p className="text-xs font-semibold text-gray-600 dark:text-gray-400">Link</p>
+                <div className="flex items-center gap-1">
+                  {resource.url.includes('youtube.com') || resource.url.includes('youtu.be') ? (
+                    <button
+                      onClick={() => {
+                        setSelectedYoutubeUrl(resource.url);
+                        setShowYoutubePreview(true);
+                      }}
+                      className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
+                      title="Click to preview"
+                    >
+                      <span className="text-xs">▶</span>
+                      <span className="truncate">YouTube</span>
+                    </button>
+                  ) : (
+                    <a
+                      href={resource.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-left text-xs px-2 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition truncate"
+                      title={resource.url}
+                    >
+                      {resource.url.split('/').pop() || 'Resource'}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        ) : null}
 
         {/* Progress Bar */}
         <div className="space-y-2">
