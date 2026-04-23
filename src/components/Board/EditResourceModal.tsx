@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import type { Resource } from '../../types';
+import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
 
 interface EditResourceModalProps {
@@ -17,10 +17,14 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   const [status, setStatus] = useState(resource.status);
   const [description, setDescription] = useState(resource.description || '');
   const [moduleTag, setModuleTag] = useState(resource.moduleTag || '');
-  const [tags, setTags] = useState<string[]>(
+  const [tags, setTags] = useState<Tag[]>(
     resource.tags 
       ? (Array.isArray(resource.tags) 
-          ? resource.tags.map(t => typeof t === 'string' ? t : t.name) 
+          ? resource.tags.map((t, idx) => 
+              typeof t === 'string' 
+                ? { id: idx, name: t }
+                : { id: t.id, name: t.name }
+            ) 
           : [])
       : []
   );
@@ -118,7 +122,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         status,
         description,
         moduleTag,
-        tags,
+        tags: tags.map(t => t.name), // Convert Tag[] back to string[]
       });
       onClose();
     } finally {
