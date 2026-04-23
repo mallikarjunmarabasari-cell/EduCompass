@@ -10,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
+  updateProfile: (fullName: string) => Promise<void>;
   error: string | null;
 }
 
@@ -100,6 +101,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const updateProfile = async (fullName: string) => {
+    try {
+      setError(null);
+      const { data, error } = await supabase.auth.updateUser({
+        data: { full_name: fullName },
+      });
+      if (error) throw error;
+      if (data.user) {
+        setUser(data.user);
+      }
+    } catch (err: any) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -110,6 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signInWithGoogle,
         signOut,
+        updateProfile,
         error,
       }}
     >
