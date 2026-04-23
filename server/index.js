@@ -550,17 +550,31 @@ app.post("/api/assignments/:resourceId/submit", async (req, res) => {
 
 app.get("/api/boards/:boardId/shares", async (req, res) => {
   try {
-    const userId = getUserId(req);
+    let userId;
+    try {
+      userId = getUserId(req);
+    } catch (authErr) {
+      console.warn("⚠️ Auth error in /shares:", authErr.message);
+      return res.status(401).json({ error: authErr.message });
+    }
+    
     const { boardId } = req.params;
+    console.log("📤 Fetching shares for board:", boardId, "by user:", userId);
 
     // Verify user owns the board
-    const { data: board } = await supabase
+    const { data: board, error: boardError } = await supabase
       .from("boards")
       .select("user_id")
       .eq("id", boardId)
       .single();
 
+    if (boardError) {
+      console.error("❌ Error fetching board:", boardError.message);
+      return res.status(500).json({ error: "Failed to fetch board" });
+    }
+
     if (!board || board.user_id !== userId) {
+      console.warn("⚠️ Not authorized: board owner mismatch");
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -570,32 +584,52 @@ app.get("/api/boards/:boardId/shares", async (req, res) => {
       .eq("board_id", boardId)
       .order("created_at", { ascending: false });
 
-    if (error) throw error;
+    if (error) {
+      console.error("❌ Error fetching shares:", error.message);
+      throw error;
+    }
+    
+    console.log("✅ Shares retrieved:", (data || []).length, "records");
     res.json(data || []);
   } catch (err) {
-    console.error("Error fetching shares:", err);
+    console.error("❌ Error in /shares endpoint:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.post("/api/boards/:boardId/share", async (req, res) => {
   try {
-    const userId = getUserId(req);
+    let userId;
+    try {
+      userId = getUserId(req);
+    } catch (authErr) {
+      console.warn("⚠️ Auth error in /share:", authErr.message);
+      return res.status(401).json({ error: authErr.message });
+    }
+    
     const { boardId } = req.params;
     const { email, permissionLevel } = req.body;
 
     if (!email || !permissionLevel) {
-      return res.status(400).json({ error: "Missing required fields" });
+      return res.status(400).json({ error: "Missing required fields: email and permissionLevel" });
     }
 
+    console.log("📧 Sharing board:", boardId, "with:", email, "level:", permissionLevel);
+
     // Verify user owns the board
-    const { data: board } = await supabase
+    const { data: board, error: boardError } = await supabase
       .from("boards")
       .select("*")
       .eq("id", boardId)
       .single();
 
+    if (boardError) {
+      console.error("❌ Error fetching board:", boardError.message);
+      return res.status(500).json({ error: "Failed to fetch board" });
+    }
+
     if (!board || board.user_id !== userId) {
+      console.warn("⚠️ Not authorized: board owner mismatch");
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -604,7 +638,7 @@ app.post("/api/boards/:boardId/share", async (req, res) => {
       .toString(36)
       .substr(2, 9)}`;
 
-    const { data: share, error } = await supabase
+    const { data: share, error: shareError } = await supabase
       .from("board_shares")
       .insert({
         board_id: boardId,
@@ -616,7 +650,12 @@ app.post("/api/boards/:boardId/share", async (req, res) => {
       })
       .select();
 
-    if (error) throw error;
+    if (shareError) {
+      console.error("❌ Error creating share:", shareError.message);
+      throw shareError;
+    }
+
+    console.log("✅ Share created, sending email...");
 
     // Send email notification (async - doesn't block response)
     sendBoardShareNotification({
@@ -635,13 +674,13 @@ app.post("/api/boards/:boardId/share", async (req, res) => {
           .update({ email_sent: emailSent, email_sent_at: new Date() })
           .eq("id", share[0].id)
           .then(() => console.log(`✅ Email sent to ${email}`))
-          .catch((err) => console.error("Error updating email status:", err));
+          .catch((err) => console.error("Error updating email status:", err.message));
       })
-      .catch((err) => console.error("Error sending email:", err));
+      .catch((err) => console.error("Error sending email:", err.message));
 
     res.json({ success: true, share: share[0], emailSent: true });
   } catch (err) {
-    console.error("Error creating share:", err);
+    console.error("❌ Error in /share endpoint:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -989,6 +1028,13 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
       }
     }
 
+    console.log(`✅ Content extracted, length: ${content.length} characters`);
+    
+    // Validate content isn't too short
+    if (!content || content.length < 20) {
+      console.warn("⚠️ Extracted content too short, may fail AI generation");
+    }
+
     // Store extracted content
     const { data: extractedData, error: extractError } = await supabase
       .from("extracted_content")
@@ -1004,7 +1050,9 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
     }
 
     // Generate AI content
+    console.log("🔄 Calling Gemini API...");
     const aiContent = await generateAIContent(content, extractedType);
+    console.log("✅ AI content generated successfully");
 
     // Store summary - delete old if exists, then insert
     try {
@@ -1063,8 +1111,13 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
       flashcards: aiContent.flashcards,
     });
   } catch (err) {
-    console.error("❌ Error generating AI content:", err);
-    res.status(500).json({ error: err.message });
+    console.error("❌ Error generating AI content:", err.message);
+    console.error("Stack trace:", err.stack);
+    console.error("Full error:", JSON.stringify(err, null, 2));
+    res.status(500).json({ 
+      error: err.message,
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 
@@ -1072,6 +1125,7 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
 app.get("/api/resources/:resourceId/summary", async (req, res) => {
   try {
     const { resourceId } = req.params;
+    console.log("📄 Fetching summary for resource:", resourceId);
 
     const { data: summary, error } = await supabase
       .from("ai_summaries")
@@ -1079,15 +1133,29 @@ app.get("/api/resources/:resourceId/summary", async (req, res) => {
       .eq("resource_id", resourceId)
       .single();
 
-    if (error || !summary) {
+    if (error) {
+      console.warn("⚠️ Summary query error:", error.message);
+      if (error.code === 'PGRST116') {
+        // No rows found
+        return res.status(404).json({ error: "Summary not found", code: 'NOT_FOUND' });
+      }
+      throw error;
+    }
+
+    if (!summary) {
       return res.status(404).json({ error: "Summary not found" });
     }
 
+    console.log("✅ Summary retrieved successfully");
     res.json({
       summary: summary.summary,
       keyPoints: summary.key_points || [],
     });
   } catch (err) {
+    console.error("❌ Error fetching summary:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
     console.error("Error fetching summary:", err);
     res.status(500).json({ error: err.message });
   }

@@ -146,6 +146,9 @@ async function generateAIContent(content, contentType = "text") {
 // Call Gemini API
 async function callGeminiAPI(prompt) {
   try {
+    console.log("🔑 API Key present:", !!GEMINI_API_KEY);
+    console.log("📝 Prompt length:", prompt.length);
+
     const response = await axios.post(
       `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
       {
@@ -173,13 +176,21 @@ async function callGeminiAPI(prompt) {
       },
     );
 
+    console.log("✅ Gemini response received, status:", response.status);
+
     if (response.data?.candidates?.[0]?.content?.parts?.[0]?.text) {
       return response.data.candidates[0].content.parts[0].text;
     }
 
+    console.error(
+      "❌ Invalid response structure:",
+      JSON.stringify(response.data),
+    );
     throw new Error("Invalid response from Gemini API");
   } catch (error) {
-    console.error("Gemini API error:", error.message);
+    console.error("❌ Gemini API error:", error.message);
+    console.error("Response status:", error.response?.status);
+    console.error("Response data:", error.response?.data);
     throw new Error(`Failed to call Gemini API: ${error.message}`);
   }
 }
