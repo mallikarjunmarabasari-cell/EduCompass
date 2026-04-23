@@ -30,6 +30,7 @@ export function ResourceCard({
   const [showStatusMenu, setShowStatusMenu] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showYoutubePreview, setShowYoutubePreview] = useState(false);
+  const [selectedYoutubeUrl, setSelectedYoutubeUrl] = useState<string>('');
   const [aiSummary, setAISummary] = useState<{ summary: string; keyPoints: string[] } | null>(null);
   const [aiFlashcards, setAIFlashcards] = useState<any>(null);
   const [aiLoading, setAILoading] = useState(false);
@@ -84,16 +85,11 @@ export function ResourceCard({
       <div className="card-elevated p-4 space-y-3 group">
         {/* Title and Actions */}
         <div className="flex justify-between items-start gap-2">
-          <a
-            href={resource.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 min-w-0"
-          >
+          <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-yellow-400 transition line-clamp-2">
               {resource.title}
             </h3>
-          </a>
+          </div>
           {!isReadOnly && (
             <button
               onClick={() => onDelete(resource.id)}
@@ -153,7 +149,10 @@ export function ResourceCard({
                   <div key={index} className="flex items-center gap-1">
                     {isYouTube ? (
                       <button
-                        onClick={() => setShowYoutubePreview(true)}
+                        onClick={() => {
+                          setSelectedYoutubeUrl(link);
+                          setShowYoutubePreview(true);
+                        }}
                         className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
                         title="Click to preview"
                       >
@@ -306,11 +305,14 @@ export function ResourceCard({
         />
       )}
 
-      {showYoutubePreview && (
+      {showYoutubePreview && selectedYoutubeUrl && (
         <YoutubePreviewModal
-          url={resource.url}
+          url={selectedYoutubeUrl}
           title={resource.title}
-          onClose={() => setShowYoutubePreview(false)}
+          onClose={() => {
+            setShowYoutubePreview(false);
+            setSelectedYoutubeUrl('');
+          }}
         />
       )}
     </>

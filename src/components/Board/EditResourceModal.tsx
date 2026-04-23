@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource } from '../../types';
+import { TagInput } from '../Search/TagInput';
 
 interface EditResourceModalProps {
   resource: Resource;
@@ -16,6 +17,13 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   const [status, setStatus] = useState(resource.status);
   const [description, setDescription] = useState(resource.description || '');
   const [moduleTag, setModuleTag] = useState(resource.moduleTag || '');
+  const [tags, setTags] = useState<string[]>(
+    resource.tags 
+      ? (Array.isArray(resource.tags) 
+          ? resource.tags.map(t => typeof t === 'string' ? t : t.name) 
+          : [])
+      : []
+  );
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -110,6 +118,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         status,
         description,
         moduleTag,
+        tags,
       });
       onClose();
     } finally {
@@ -300,6 +309,22 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
               placeholder="e.g., Module 1, Chapter 3"
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+              Tags (Optional)
+            </label>
+            <TagInput
+              tags={tags}
+              onTagsChange={(newTags) => {
+                setTags(newTags);
+                handleChange();
+              }}
+            />
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              💡 Add tags to help with AI content generation and organization
+            </p>
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
