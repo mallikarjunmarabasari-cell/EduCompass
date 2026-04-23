@@ -21,6 +21,7 @@ export function EditBoardModal({ board, onClose, onUpdate }: EditBoardModalProps
     setLoading(true);
     try {
       await onUpdate({ title, description, scheduleTime });
+      onClose();
     } finally {
       setLoading(false);
     }
