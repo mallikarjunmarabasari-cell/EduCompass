@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 const { getTranscript } = require("youtube-transcript-api");
 
 // Load .env file only in development (on Render, env vars are set directly)
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== "production") {
   dotenv.config();
 }
 
@@ -20,7 +20,10 @@ const GEMINI_API_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 // Log API key status on startup
-console.log("🔑 GEMINI_API_KEY status:", GEMINI_API_KEY ? "✅ Set" : "❌ Missing");
+console.log(
+  "🔑 GEMINI_API_KEY status:",
+  GEMINI_API_KEY ? "✅ Set" : "❌ Missing",
+);
 console.log("🌍 Environment:", process.env.NODE_ENV || "development");
 
 // Initialize YouTube API client
@@ -156,14 +159,18 @@ async function callGeminiAPI(prompt) {
     // Validate API key
     if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === "") {
       console.error("❌ GEMINI_API_KEY is not set in environment variables");
-      console.error("   On Render: Add GEMINI_API_KEY to Environment Variables");
+      console.error(
+        "   On Render: Add GEMINI_API_KEY to Environment Variables",
+      );
       console.error("   Locally: Add GEMINI_API_KEY to .env file");
       throw new Error("GEMINI_API_KEY environment variable not configured");
     }
 
-    console.log("🔑 Using GEMINI_API_KEY: " + GEMINI_API_KEY.substring(0, 10) + "...");
+    console.log(
+      "🔑 Using GEMINI_API_KEY: " + GEMINI_API_KEY.substring(0, 10) + "...",
+    );
     console.log("📝 Prompt length:", prompt.length, "characters");
-    
+
     const response = await axios.post(
       `${GEMINI_API_URL}?key=${GEMINI_API_KEY}`,
       {
@@ -214,36 +221,37 @@ async function callGeminiAPI(prompt) {
       "❌ Invalid response structure:",
       JSON.stringify(response.data),
     );
-    throw new Error("Invalid response structure from Gemini API - missing candidates/text");
+    throw new Error(
+      "Invalid response structure from Gemini API - missing candidates/text",
+    );
   } catch (error) {
     console.error("❌ Gemini API error:", error.message);
-    
+
     if (error.response) {
       console.error("   Status:", error.response.status);
       console.error("   Data:", JSON.stringify(error.response.data));
-      
+
       // Handle specific error codes
       if (error.response.status === 401) {
         console.error("   → Invalid/expired API key");
       } else if (error.response.status === 429) {
         console.error("   → Rate limited (quota exceeded)");
       } else if (error.response.status === 400) {
-        console.error("   → Bad request (prompt might be too long or malformed)");
+        console.error(
+          "   → Bad request (prompt might be too long or malformed)",
+        );
       }
     } else if (error.code) {
       console.error("   Error code:", error.code);
-      if (error.code === 'ECONNREFUSED') {
+      if (error.code === "ECONNREFUSED") {
         console.error("   → Network connection refused");
-      } else if (error.code === 'ENOTFOUND') {
+      } else if (error.code === "ENOTFOUND") {
         console.error("   → DNS resolution failed");
-      } else if (error.code === 'ETIMEDOUT') {
+      } else if (error.code === "ETIMEDOUT") {
         console.error("   → Request timeout (API took too long)");
       }
     }
-    
-    throw new Error(`Failed to call Gemini API: ${error.message}`);
-  }
-}
+
     throw new Error(`Failed to call Gemini API: ${error.message}`);
   }
 }
