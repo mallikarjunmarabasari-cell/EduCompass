@@ -99,7 +99,7 @@ function formatResource(resource) {
 async function upsertTags(tagNames) {
   if (!tagNames || !Array.isArray(tagNames) || tagNames.length === 0) return [];
   const cleanNames = Array.from(
-    new Set(tagNames.map((t) => (t || "").trim()).filter(Boolean))
+    new Set(tagNames.map((t) => (t || "").trim()).filter(Boolean)),
   );
   if (cleanNames.length === 0) return [];
 
@@ -557,7 +557,7 @@ app.get("/api/boards/:boardId/shares", async (req, res) => {
       console.warn("⚠️ Auth error in /shares:", authErr.message);
       return res.status(401).json({ error: authErr.message });
     }
-    
+
     const { boardId } = req.params;
     console.log("📤 Fetching shares for board:", boardId, "by user:", userId);
 
@@ -588,7 +588,7 @@ app.get("/api/boards/:boardId/shares", async (req, res) => {
       console.error("❌ Error fetching shares:", error.message);
       throw error;
     }
-    
+
     console.log("✅ Shares retrieved:", (data || []).length, "records");
     res.json(data || []);
   } catch (err) {
@@ -606,15 +606,24 @@ app.post("/api/boards/:boardId/share", async (req, res) => {
       console.warn("⚠️ Auth error in /share:", authErr.message);
       return res.status(401).json({ error: authErr.message });
     }
-    
+
     const { boardId } = req.params;
     const { email, permissionLevel } = req.body;
 
     if (!email || !permissionLevel) {
-      return res.status(400).json({ error: "Missing required fields: email and permissionLevel" });
+      return res
+        .status(400)
+        .json({ error: "Missing required fields: email and permissionLevel" });
     }
 
-    console.log("📧 Sharing board:", boardId, "with:", email, "level:", permissionLevel);
+    console.log(
+      "📧 Sharing board:",
+      boardId,
+      "with:",
+      email,
+      "level:",
+      permissionLevel,
+    );
 
     // Verify user owns the board
     const { data: board, error: boardError } = await supabase
@@ -674,7 +683,9 @@ app.post("/api/boards/:boardId/share", async (req, res) => {
           .update({ email_sent: emailSent, email_sent_at: new Date() })
           .eq("id", share[0].id)
           .then(() => console.log(`✅ Email sent to ${email}`))
-          .catch((err) => console.error("Error updating email status:", err.message));
+          .catch((err) =>
+            console.error("Error updating email status:", err.message),
+          );
       })
       .catch((err) => console.error("Error sending email:", err.message));
 
@@ -985,7 +996,7 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
     }
 
     console.log(
-      `🤖 Generating AI content for resource ${resourceId} from URL: ${url}`
+      `🤖 Generating AI content for resource ${resourceId} from URL: ${url}`,
     );
 
     let content;
@@ -1022,14 +1033,14 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
       } catch (extractError) {
         console.warn(
           "Warning: Could not extract article text:",
-          extractError.message
+          extractError.message,
         );
         content = `[Article Content]\n\nUnable to extract full article text from URL. Using this placeholder for demonstration.`;
       }
     }
 
     console.log(`✅ Content extracted, length: ${content.length} characters`);
-    
+
     // Validate content isn't too short
     if (!content || content.length < 20) {
       console.warn("⚠️ Extracted content too short, may fail AI generation");
@@ -1102,7 +1113,7 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
     }
 
     console.log(
-      `✅ AI content generated successfully for resource ${resourceId}`
+      `✅ AI content generated successfully for resource ${resourceId}`,
     );
 
     res.json({
@@ -1114,9 +1125,9 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
     console.error("❌ Error generating AI content:", err.message);
     console.error("Stack trace:", err.stack);
     console.error("Full error:", JSON.stringify(err, null, 2));
-    res.status(500).json({ 
+    res.status(500).json({
       error: err.message,
-      details: process.env.NODE_ENV === 'development' ? err.stack : undefined
+      details: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
   }
 });
@@ -1135,9 +1146,11 @@ app.get("/api/resources/:resourceId/summary", async (req, res) => {
 
     if (error) {
       console.warn("⚠️ Summary query error:", error.message);
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         // No rows found
-        return res.status(404).json({ error: "Summary not found", code: 'NOT_FOUND' });
+        return res
+          .status(404)
+          .json({ error: "Summary not found", code: "NOT_FOUND" });
       }
       throw error;
     }
@@ -1153,10 +1166,6 @@ app.get("/api/resources/:resourceId/summary", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error fetching summary:", err.message);
-    res.status(500).json({ error: err.message });
-  }
-});
-    console.error("Error fetching summary:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -1253,7 +1262,7 @@ app.post("/api/resources/:resourceId/process-pdf", async (req, res) => {
     } catch (extractError) {
       console.warn(
         "Warning: Could not extract PDF text:",
-        extractError.message
+        extractError.message,
       );
       return res.status(400).json({
         error: "Failed to extract text from PDF. Ensure the PDF is valid.",
