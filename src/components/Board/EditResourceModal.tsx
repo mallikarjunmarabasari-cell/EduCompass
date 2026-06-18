@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
+import { extractYouTubeId, getYouTubeThumbnail } from '../../utils/linkUtils';
 
 interface EditResourceModalProps {
   resource: Resource;
@@ -62,6 +63,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
     try {
       let primaryUrl = '';
       let resourceCategory = category;
+      let thumbnailUrl: string | undefined;
 
       // Handle PDF file upload
       if (pdfFile) {
@@ -92,6 +94,11 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         const firstUrl = urls.find(url => url.trim());
         if (firstUrl) {
           primaryUrl = firstUrl;
+          // Extract YouTube thumbnail if it's a YouTube URL
+          const videoId = extractYouTubeId(firstUrl);
+          if (videoId) {
+            thumbnailUrl = getYouTubeThumbnail(videoId);
+          }
         }
       }
 
@@ -122,6 +129,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         status,
         description,
         moduleTag,
+        thumbnailUrl,
         tags: tags.map(t => t.name), // Convert Tag[] back to string[]
       });
       onClose();

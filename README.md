@@ -1394,3 +1394,8 @@ Master your learning with EduCompass! 🚀
 ---
 
 **EduCompass is ready for production.** All features are implemented, tested, and fully documented. Happy learning! 📚
+
+
+I am not able to open various resources its opening only one(first one) youtube resource even though there are two different links(there is no thumbnail image of respective youtube video) and upon clicking resource title its taking me to the first youtube link same for reading resources like(for instance :https://www.geeksforgeeks.org/c/variables-in-c/ for board:dsa, resource: Variable, Datatype and operators).in case when i go to edit resource its not showing add tags input box. unable to add multiple pdf resources
+and i feel there is need for adding feature for  various file formats like .txt , .c, .py, .java etc... and i feel that
+There should be different category and status for each and every Resources (URLs and/or PDF)  added and these are seperated by category inside the resource. and ther are errors in : src/components/Board/EditResourceModal.tsx

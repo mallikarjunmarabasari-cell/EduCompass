@@ -8,7 +8,6 @@ import path from "path";
 import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
-const { getTranscript } = require("youtube-transcript-api");
 
 // Load .env file only in development (on Render, env vars are set directly)
 if (process.env.NODE_ENV !== "production") {
@@ -32,6 +31,40 @@ const youtubeService = {
     try {
       console.log("📺 Fetching transcript for video:", videoId);
 
+      // Try to import youtube-transcript-api dynamically
+      let getTranscript;
+      try {
+        const youtubeTranscriptApi = await import("youtube-transcript-api");
+        getTranscript =
+          youtubeTranscriptApi.default?.getTranscript ||
+          youtubeTranscriptApi.getTranscript;
+      } catch (importErr) {
+        console.warn(
+          "⚠️ Dynamic import failed, trying require...",
+          importErr.message,
+        );
+        try {
+          const yapi = require("youtube-transcript-api");
+          getTranscript = yapi.getTranscript || yapi.default?.getTranscript;
+        } catch (requireErr) {
+          console.error(
+            "❌ Failed to import youtube-transcript-api:",
+            requireErr.message,
+          );
+          throw new Error("youtube-transcript-api module not available");
+        }
+      }
+
+      if (!getTranscript || typeof getTranscript !== "function") {
+        console.error(
+          "❌ getTranscript is not a function. Module exports:",
+          typeof getTranscript,
+        );
+        throw new Error(
+          "getTranscript function not found in youtube-transcript-api",
+        );
+      }
+
       // Fetch transcript using youtube-transcript-api library
       const transcript = await getTranscript(videoId);
       const transcriptText = transcript.map((t) => t.text).join(" ");
@@ -39,7 +72,7 @@ const youtubeService = {
       console.log("✅ Transcript fetched successfully");
       return transcriptText;
     } catch (error) {
-      console.error("Error fetching YouTube transcript:", error);
+      console.error("Error fetching YouTube transcript:", error.message);
       throw new Error("Failed to fetch YouTube transcript");
     }
   },
@@ -86,8 +119,19 @@ async function extractPDFText(pdfPath) {
   try {
     console.log("📄 Extracting text from PDF:", pdfPath);
 
-    // Read the PDF file
-    const filePath = path.join(process.cwd(), pdfPath);
+    let filePath = pdfPath;
+    if (pdfPath.startsWith("/uploads/pdfs")) {
+      filePath = path.join(process.cwd(), pdfPath.slice(1));
+    } else if (!path.isAbsolute(pdfPath)) {
+      filePath = path.join(process.cwd(), pdfPath);
+    }
+
+    console.log("📄 Resolved PDF path:", filePath);
+
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`PDF file not found at ${filePath}`);
+    }
+
     const fileBuffer = fs.readFileSync(filePath);
 
     // Parse PDF - pdfParse.default is the actual function when using import * as pdfParse

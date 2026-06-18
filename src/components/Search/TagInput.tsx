@@ -87,12 +87,12 @@ export function TagInput({
         {tags.map((tag) => (
           <div
             key={tag.id}
-            className="inline-flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+            className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 px-3 py-1 rounded-full text-sm"
           >
             <span>#{tag.name}</span>
             <button
               onClick={() => handleRemoveTag(tag.id)}
-              className="text-blue-600 hover:text-blue-900"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-200"
               aria-label={`Remove ${tag.name} tag`}
             >
               <X className="h-4 w-4" />
@@ -111,20 +111,20 @@ export function TagInput({
           onFocus={() => input && setShowSuggestions(true)}
           placeholder={tags.length < maxTags ? placeholder : `Maximum ${maxTags} tags reached`}
           disabled={tags.length >= maxTags}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
         />
 
         {showSuggestions && filteredSuggestions.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
             {filteredSuggestions.map((tag) => (
               <button
                 key={tag.id}
                 onClick={() => handleAddTag(tag)}
-                className="w-full text-left px-3 py-2 hover:bg-blue-50 flex items-center justify-between"
+                className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-gray-700 flex items-center justify-between text-gray-900 dark:text-white"
               >
                 <span className="text-sm">#{tag.name}</span>
                 {(tag as any).usage_count && (
-                  <span className="text-xs text-gray-500">({(tag as any).usage_count})</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">({(tag as any).usage_count})</span>
                 )}
               </button>
             ))}
@@ -133,7 +133,7 @@ export function TagInput({
       </div>
 
       {tags.length > 0 && (
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           {tags.length}/{maxTags} tags
         </p>
       )}

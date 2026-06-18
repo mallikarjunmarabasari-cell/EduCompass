@@ -295,8 +295,9 @@ export function ResourceCard({
               </div>
             )}
           </div>
+          {/* Open first primary resource link */}
           <a
-            href={resource.url}
+            href={resource.urls && resource.urls.length > 0 ? resource.urls[0] : resource.url}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition"

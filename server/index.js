@@ -512,8 +512,25 @@ app.post("/api/assignments/:resourceId/submit", async (req, res) => {
       return res.status(404).json({ error: "Assignment not found" });
     }
 
-    // Calculate score (store as 0 for now - implement scoring logic as needed)
-    const scorePercent = 0;
+    const questions = Array.isArray(assignment.questions)
+      ? assignment.questions
+      : [];
+    const selectedAnswers = Array.isArray(answers) ? answers : [];
+
+    let correctCount = 0;
+    questions.forEach((question, index) => {
+      if (
+        selectedAnswers[index] !== undefined &&
+        selectedAnswers[index] === question.correctIndex
+      ) {
+        correctCount += 1;
+      }
+    });
+
+    const scorePercent =
+      questions.length > 0
+        ? Math.round((correctCount / questions.length) * 100)
+        : 0;
 
     // Create result record
     const { data: result, error } = await supabase
@@ -905,11 +922,27 @@ app.get("/api/analytics/summary", async (req, res) => {
     const completedResources =
       resources?.filter((r) => r.status === "completed").length || 0;
 
+    const { data: scoredResources } = await supabase
+      .from("resources")
+      .select("latest_assignment_score")
+      .in("board_id", boards?.map((b) => b.id) || [])
+      .not("latest_assignment_score", "is", null);
+
+    const averageScore =
+      scoredResources && scoredResources.length > 0
+        ? Math.round(
+            scoredResources.reduce(
+              (sum, res) => sum + (res.latest_assignment_score || 0),
+              0,
+            ) / scoredResources.length,
+          )
+        : 0;
+
     res.json({
       totalBoards: boards?.length || 0,
       totalResources: resources?.length || 0,
       completedResources,
-      averageScore: 0,
+      averageScore,
     });
   } catch (err) {
     console.error("Error fetching analytics:", err);
@@ -1010,9 +1043,16 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
         return res.status(400).json({ error: "Invalid YouTube URL" });
       }
 
-      // For now, use a placeholder. In production, integrate youtube-transcript library
-      content = `[YouTube Video Content]\n\nTitle: Learning Resource\nThis is a placeholder for YouTube transcript. To use real transcripts, install youtube-transcript library and configure YouTube Data API.`;
-      console.log(`📺 Using placeholder transcript for video: ${videoId}`);
+      try {
+        content = await youtubeService.getTranscript(videoId);
+        console.log(`📺 Successfully fetched transcript for video: ${videoId}`);
+      } catch (transcriptError) {
+        console.warn(
+          `⚠️ Could not fetch transcript for ${videoId}:`,
+          transcriptError.message,
+        );
+        content = `[YouTube Video Content]\n\nTitle: Learning Resource\nThis is a fallback transcript placeholder because the video transcript could not be retrieved.`;
+      }
     } else if (url.includes(".pdf") || url.startsWith("/uploads/pdfs")) {
       // Handle PDF files
       extractedType = "pdf_text";
