@@ -84,12 +84,15 @@ function formatResource(resource) {
     urls: resource.urls || [],
     category: resource.category,
     status: resource.status,
-    progress: resource.progress,
+    progress: resource.progress || 0,
     description: resource.description,
     moduleTag: resource.module_tag,
-    hasPracticeAssignment: resource.has_practice_assignment,
-    assignmentCompleted: resource.assignment_completed,
-    latestAssignmentScore: resource.latest_assignment_score,
+    hasPracticeAssignment: !!resource.has_practice_assignment,
+    assignmentCompleted: !!resource.assignment_completed,
+    latestAssignmentScore:
+      resource.latest_assignment_score !== undefined
+        ? resource.latest_assignment_score
+        : null,
     createdAt: resource.created_at,
     updatedAt: resource.updated_at,
   };
@@ -187,6 +190,31 @@ app.get("/api/boards", async (req, res) => {
     res.json(data || []);
   } catch (err) {
     console.error("Error fetching boards:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/boards/:id - Get a single board with access control
+app.get("/api/boards/:id", async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("boards")
+      .select("*")
+      .eq("id", id)
+      .eq("user_id", userId)
+      .single();
+
+    if (error || !data) {
+      console.error("❌ Error fetching board:", error);
+      return res.status(404).json({ error: "Board not found" });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error("Error fetching board:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -319,12 +347,23 @@ app.get("/api/boards/:boardId/resources", async (req, res) => {
 
     const { data, error } = await supabase
       .from("resources")
-      .select("*")
+      .select(`*, resource_tags(tags(id, name))`)
       .eq("board_id", boardId)
       .order("created_at", { ascending: true });
 
     if (error) throw error;
-    res.json((data || []).map(formatResource));
+
+    const formatted = (data || []).map((resource) => {
+      const formattedResource = formatResource(resource);
+      return {
+        ...formattedResource,
+        tags: (resource.resource_tags || [])
+          .map((rt) => rt.tags)
+          .filter(Boolean),
+      };
+    });
+
+    res.json(formatted);
   } catch (err) {
     console.error("Error fetching resources:", err);
     res.status(500).json({ error: err.message });
@@ -362,11 +401,24 @@ app.post("/api/boards/:boardId/resources", async (req, res) => {
         board_id: boardId,
         title,
         description,
+        url: req.body.url || (urlsArray.length > 0 ? urlsArray[0] : null),
         urls: urlsArray,
         category,
-        status: "todo",
-        progress: 0,
+        status: req.body.status || "todo",
+        progress: req.body.progress ?? 0,
         module_tag: req.body.moduleTag || null,
+        has_practice_assignment:
+          req.body.hasPracticeAssignment !== undefined
+            ? req.body.hasPracticeAssignment
+            : true,
+        assignment_completed:
+          req.body.assignmentCompleted !== undefined
+            ? req.body.assignmentCompleted
+            : false,
+        latest_assignment_score:
+          req.body.latestAssignmentScore !== undefined
+            ? req.body.latestAssignmentScore
+            : null,
       })
       .select();
 
@@ -378,6 +430,64 @@ app.post("/api/boards/:boardId/resources", async (req, res) => {
         await upsertResourceTags(resource.id, tags);
       } catch (e) {
         console.error("Error upserting resource tags:", e);
+      }
+    }
+
+    // Create a default practice assignment when resources are created with practice enabled
+    if (resource.has_practice_assignment) {
+      try {
+        const { data: existingAssignment, error: existingAssignmentError } =
+          await supabase
+            .from("assignments")
+            .select("*")
+            .eq("resource_id", resource.id)
+            .single();
+
+        if (!existingAssignment && !existingAssignmentError) {
+          await supabase.from("assignments").insert({
+            resource_id: resource.id,
+            board_id: boardId,
+            type: "practice",
+            title: `Practice Quiz: ${title}`,
+            questions: [
+              {
+                id: "q1",
+                text: `What is the main topic covered in \"${title}\"?`,
+                options: [
+                  "The main learning objective",
+                  "An unrelated topic",
+                  "A random fact",
+                  "None of the above",
+                ],
+                correctIndex: 0,
+              },
+              {
+                id: "q2",
+                text: `Which action should you take after reviewing this resource?`,
+                options: [
+                  "Continue practicing the material",
+                  "Ignore the resource",
+                  "Delete the board",
+                  "Share it immediately without review",
+                ],
+                correctIndex: 0,
+              },
+              {
+                id: "q3",
+                text: `How can this resource help you learn better?`,
+                options: [
+                  "By reinforcing important concepts",
+                  "By distracting me",
+                  "By lowering my progress",
+                  "By removing assignments",
+                ],
+                correctIndex: 0,
+              },
+            ],
+          });
+        }
+      } catch (assignmentError) {
+        console.error("Error creating default assignment:", assignmentError);
       }
     }
 
@@ -397,11 +507,20 @@ app.patch("/api/resources/:id", async (req, res) => {
     if (req.body.status) updateData.status = req.body.status;
     if (req.body.progress !== undefined)
       updateData.progress = req.body.progress;
+    if (req.body.url) updateData.url = req.body.url;
     if (req.body.urls) updateData.urls = req.body.urls;
     if (req.body.description) updateData.description = req.body.description;
     if (req.body.title) updateData.title = req.body.title;
-    if (req.body.moduleTag) updateData.module_tag = req.body.moduleTag;
+    if (req.body.moduleTag !== undefined)
+      updateData.module_tag = req.body.moduleTag;
     if (req.body.category) updateData.category = req.body.category;
+    if (req.body.thumbnailUrl) updateData.thumbnail_url = req.body.thumbnailUrl;
+    if (req.body.hasPracticeAssignment !== undefined)
+      updateData.has_practice_assignment = req.body.hasPracticeAssignment;
+    if (req.body.assignmentCompleted !== undefined)
+      updateData.assignment_completed = req.body.assignmentCompleted;
+    if (req.body.latestAssignmentScore !== undefined)
+      updateData.latest_assignment_score = req.body.latestAssignmentScore;
 
     const { data, error } = await supabase
       .from("resources")
@@ -488,7 +607,64 @@ app.get("/api/assignments/:resourceId", async (req, res) => {
       .single();
 
     if (error && error.code !== "PGRST116") throw error;
-    res.json(data || null);
+
+    if (data) {
+      return res.json(data);
+    }
+
+    // Create a default assignment if the resource has practice enabled
+    const { data: resource, error: resourceError } = await supabase
+      .from("resources")
+      .select("has_practice_assignment, title")
+      .eq("id", resourceId)
+      .single();
+
+    if (resourceError) throw resourceError;
+
+    if (!resource || !resource.has_practice_assignment) {
+      return res.json(null);
+    }
+
+    const assignmentPayload = {
+      resource_id: resourceId,
+      board_id: null,
+      type: "practice",
+      title: `Practice Quiz: ${resource.title || "Resource"}`,
+      questions: [
+        {
+          id: "q1",
+          text: `What is the best next step after reviewing this resource?`,
+          options: [
+            "Practice what I learned",
+            "Ignore the content",
+            "Delete the resource",
+            "Share without reviewing",
+          ],
+          correctIndex: 0,
+        },
+        {
+          id: "q2",
+          text: `What should you do when you finish this topic?`,
+          options: [
+            "Move to the next resource",
+            "Stop learning entirely",
+            "Reset the board",
+            "Create an unrelated note",
+          ],
+          correctIndex: 0,
+        },
+      ],
+    };
+
+    const { data: createdAssignment, error: createError } = await supabase
+      .from("assignments")
+      .insert(assignmentPayload)
+      .select()
+      .single();
+
+    if (createError) throw createError;
+
+    res.json(createdAssignment);
   } catch (err) {
     console.error("Error fetching assignment:", err);
     res.status(500).json({ error: err.message });
@@ -994,10 +1170,11 @@ app.get("/api/analytics/completion", async (req, res) => {
       .select("id")
       .eq("user_id", userId);
 
+    const boardIds = boards?.map((b) => b.id) || [];
     const { data: resources } = await supabase
       .from("resources")
       .select("id, status")
-      .in("board_id", boards?.map((b) => b.id) || []);
+      .in("board_id", boardIds);
 
     const completed =
       resources?.filter((r) => r.status === "completed").length || 0;
@@ -1014,6 +1191,79 @@ app.get("/api/analytics/completion", async (req, res) => {
   }
 });
 
+app.get("/api/analytics/overview", async (req, res) => {
+  try {
+    const userId = getUserId(req);
+
+    const { data: boards, error: boardsError } = await supabase
+      .from("boards")
+      .select("id")
+      .eq("user_id", userId);
+
+    if (boardsError) throw boardsError;
+
+    const boardIds = boards?.map((b) => b.id) || [];
+    const { data: resources, error: resourcesError } = await supabase
+      .from("resources")
+      .select("status, category, latest_assignment_score")
+      .in("board_id", boardIds);
+
+    if (resourcesError) throw resourcesError;
+
+    const totalBoards = boardIds.length;
+    const totalResources = resources?.length || 0;
+    const completedResources =
+      resources?.filter((r) => r.status === "completed").length || 0;
+    const scoredResources = resources?.filter(
+      (r) =>
+        r.latest_assignment_score !== null &&
+        r.latest_assignment_score !== undefined,
+    );
+    const averageScore =
+      scoredResources && scoredResources.length > 0
+        ? Math.round(
+            scoredResources.reduce(
+              (sum, res) => sum + (res.latest_assignment_score || 0),
+              0,
+            ) / scoredResources.length,
+          )
+        : 0;
+
+    const distribution = {
+      Video: 0,
+      Notes: 0,
+      PDF: 0,
+      Practice: 0,
+      Reading: 0,
+    };
+
+    resources?.forEach((resource) => {
+      if (resource.category && distribution.hasOwnProperty(resource.category)) {
+        distribution[resource.category]++;
+      }
+    });
+
+    const completed = completedResources;
+    const pending = totalResources - completed;
+
+    res.json({
+      totalBoards,
+      totalResources,
+      completedResources,
+      averageScore,
+      distribution,
+      completion: {
+        completed,
+        pending,
+        total: totalResources,
+      },
+    });
+  } catch (err) {
+    console.error("Error fetching analytics overview:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ============================================================================
 // AI CONTENT GENERATION ENDPOINTS
 // ============================================================================
@@ -1022,7 +1272,21 @@ app.get("/api/analytics/completion", async (req, res) => {
 app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
   try {
     const { resourceId } = req.params;
-    const { url, contentType } = req.body;
+    let { url, contentType } = req.body;
+
+    if (!url) {
+      const { data: resource, error: resourceError } = await supabase
+        .from("resources")
+        .select("url, urls")
+        .eq("id", resourceId)
+        .single();
+
+      if (resourceError) {
+        throw resourceError;
+      }
+
+      url = resource?.url || (resource?.urls?.[0] ?? null);
+    }
 
     if (!url) {
       return res.status(400).json({ error: "URL is required" });

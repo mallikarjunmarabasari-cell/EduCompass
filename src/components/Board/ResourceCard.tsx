@@ -43,17 +43,23 @@ export function ResourceCard({
 
   const handleGenerateAI = async () => {
     if (aiLoaded) return;
-    
+
+    const requestUrl = resource.url || (resource.urls && resource.urls.length > 0 ? resource.urls[0] : '');
+    if (!requestUrl) {
+      alert('No valid resource URL available to generate AI summary. Please add a link or PDF.');
+      return;
+    }
+
     try {
       setAILoading(true);
       console.log(`🤖 Generating AI content for ${resource.title}`);
-      
-      const response = await aiService.generateContent(resource.id, resource.url);
-      
+
+      const response = await aiService.generateContent(resource.id, requestUrl);
+
       if (response.data) {
         setAISummary({
           summary: response.data.summary,
-          keyPoints: response.data.keyPoints || []
+          keyPoints: response.data.keyPoints || [],
         });
         setAIFlashcards(response.data.flashcards);
         setAILoaded(true);
@@ -66,12 +72,13 @@ export function ResourceCard({
         const flashcardsRes = await aiService.getFlashcards(resource.id);
         setAISummary({
           summary: summaryRes.data.summary,
-          keyPoints: summaryRes.data.key_points || []
+          keyPoints: summaryRes.data.key_points || [],
         });
         setAIFlashcards(flashcardsRes.data.flashcards);
         setAILoaded(true);
       } catch (e) {
         console.error('Failed to fetch generated AI content:', e);
+        alert('AI generation failed. Please check the resource link or try again later.');
       }
     } finally {
       setAILoading(false);

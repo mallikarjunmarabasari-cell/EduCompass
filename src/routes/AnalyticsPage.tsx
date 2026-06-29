@@ -12,6 +12,7 @@ import {
   YAxis,
 } from 'recharts';
 import { analyticsService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export function AnalyticsPage() {
   const [summary, setSummary] = useState<any>(null);
@@ -20,9 +21,13 @@ export function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const { user, loading: authLoading } = useAuth();
+
   useEffect(() => {
-    loadAnalytics();
-  }, []);
+    if (!authLoading && user) {
+      loadAnalytics();
+    }
+  }, [authLoading, user]);
 
   const loadAnalytics = async () => {
     try {
@@ -34,16 +39,17 @@ export function AnalyticsPage() {
         setLoading(false);
       }, 15000);
 
-      const [summaryRes, distRes, complRes] = await Promise.all([
-        analyticsService.getSummary(),
-        analyticsService.getDistribution(),
-        analyticsService.getCompletion(),
-      ]);
-
+      const overviewRes = await analyticsService.getOverview();
       window.clearTimeout(timeoutId);
-      setSummary(summaryRes.data);
-      setDistribution(distRes.data);
-      setCompletion(complRes.data);
+
+      setSummary({
+        totalBoards: overviewRes.data.totalBoards,
+        totalResources: overviewRes.data.totalResources,
+        completedResources: overviewRes.data.completedResources,
+        averageScore: overviewRes.data.averageScore,
+      });
+      setDistribution(overviewRes.data.distribution);
+      setCompletion(overviewRes.data.completion);
     } catch (err: any) {
       console.error('Error loading analytics:', err);
       setError(err?.message || 'Failed to load analytics. Please try again.');
@@ -52,12 +58,22 @@ export function AnalyticsPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin inline-block w-12 h-12 border-4 border-yellow-400 border-t-transparent rounded-full"></div>
           <p className="mt-4 text-gray-600 dark:text-gray-400">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-lg text-gray-600 dark:text-gray-400">Please sign in to view analytics.</p>
         </div>
       </div>
     );

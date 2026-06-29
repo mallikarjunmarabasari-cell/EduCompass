@@ -30,10 +30,12 @@ export function DashboardPage() {
       setBoards(res.data);
 
       const resourcesMap: Record<string, Resource[]> = {};
-      for (const board of res.data) {
+      const boardResourcePromises = res.data.map(async (board) => {
         const resRes = await resourceService.getByBoard(board.id);
         resourcesMap[board.id] = resRes.data;
-      }
+      });
+
+      await Promise.all(boardResourcePromises);
       setResourceMap(resourcesMap);
     } catch (err) {
       console.error('Error loading boards:', err);

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, ArrowLeft, Share2 } from 'lucide-react';
 import { boardService, resourceService, tagService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import type { Board, Resource, SearchFilters, Tag } from '../types';
 import { ResourceColumn } from '../components/Board/ResourceColumn';
 import { AddResourceModal } from '../components/Board/AddResourceModal';
@@ -11,6 +12,7 @@ import { SearchBar, FilterPanel } from '../components/Search';
 export function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [board, setBoard] = useState<Board | null>(null);
   const [resources, setResources] = useState<Resource[]>([]);
   const [filteredResources, setFilteredResources] = useState<Resource[]>([]);
@@ -22,11 +24,12 @@ export function BoardPage() {
   const [searchMode, setSearchMode] = useState(false);
 
   useEffect(() => {
-    if (boardId) {
-      loadBoard();
-      loadTags();
+    if (boardId && !authLoading && user) {
+      Promise.all([loadBoard(), loadTags()]).catch((err) => {
+        console.error('Error loading board or tags:', err);
+      });
     }
-  }, [boardId]);
+  }, [boardId, authLoading, user]);
 
   // Apply filters whenever filters or resources change
   useEffect(() => {
@@ -37,34 +40,20 @@ export function BoardPage() {
   const loadBoard = async () => {
     if (!boardId) return;
     try {
-      const boardRes = await boardService.getAll();
-      const foundBoard = boardRes.data.find((b) => b.id === boardId);
-      setBoard(foundBoard || null);
+      setLoading(true);
+      const [boardRes, resRes] = await Promise.all([
+        boardService.getById(boardId),
+        resourceService.getByBoard(boardId),
+      ]);
 
-      const resRes = await resourceService.getByBoard(boardId);
-      console.log('📦 Raw resources from API:', resRes.data.length);
-      
-      // Load tags for each resource
-      const resourcesWithTags = await Promise.all(
-        resRes.data.map(async (resource) => {
-          try {
-            const tagsRes = await resourceService.getTags(resource.id);
-            console.log(`🏷️ Tags for "${resource.title}":`, tagsRes.data);
-            return {
-              ...resource,
-              tags: tagsRes.data || [],
-            };
-          } catch (err) {
-            console.error(`Error loading tags for resource ${resource.id}:`, err);
-            return {
-              ...resource,
-              tags: [],
-            };
-          }
-        })
-      );
-      
-      console.log('✅ Resources with tags loaded:', resourcesWithTags.length);
+      setBoard(boardRes.data || null);
+
+      const resourcesWithTags = (resRes.data || []).map((resource) => ({
+        ...resource,
+        tags: Array.isArray(resource.tags) ? resource.tags : resource.tags || [],
+      }));
+
+      console.log('📦 Loaded resources with tags:', resourcesWithTags.length);
       setResources(resourcesWithTags);
       setFilteredResources(resourcesWithTags);
     } catch (err) {
@@ -96,7 +85,7 @@ export function BoardPage() {
         const matches = 
           r.title.toLowerCase().includes(query) ||
           r.description?.toLowerCase().includes(query) ||
-          r.url.toLowerCase().includes(query);
+          r.url?.toLowerCase().includes(query);
         if (matches) {
           console.log(`✅ Matched: ${r.title}`);
         }
@@ -157,30 +146,28 @@ export function BoardPage() {
   };
 
   const handleStatusChange = async (resourceId: string, newStatus: Resource['status']) => {
+    setResources((prev) =>
+      prev.map((r) => (r.id === resourceId ? { ...r, status: newStatus } : r)),
+    );
+
     try {
-      // Optimistic update - update local state immediately
-      setResources(prev => 
-        prev.map(r => r.id === resourceId ? { ...r, status: newStatus } : r)
-      );
-      
-      // Then persist to database
       await resourceService.update(resourceId, { status: newStatus });
-      
-      // Verify the change was saved correctly
-      await loadBoard();
     } catch (err) {
       console.error('Error updating status:', err);
-      // Reload on error to revert optimistic update
       await loadBoard();
     }
   };
 
   const handleProgressChange = async (resourceId: string, progress: number) => {
+    setResources((prev) =>
+      prev.map((r) => (r.id === resourceId ? { ...r, progress } : r)),
+    );
+
     try {
       await resourceService.update(resourceId, { progress });
-      await loadBoard();
     } catch (err) {
       console.error('Error updating progress:', err);
+      await loadBoard();
     }
   };
 
@@ -188,9 +175,11 @@ export function BoardPage() {
     if (!window.confirm('Are you sure you want to delete this resource?')) return;
     try {
       await resourceService.delete(resourceId);
-      await loadBoard();
+      setResources((prev) => prev.filter((r) => r.id !== resourceId));
+      setFilteredResources((prev) => prev.filter((r) => r.id !== resourceId));
     } catch (err) {
       console.error('Error deleting resource:', err);
+      await loadBoard();
     }
   };
 
