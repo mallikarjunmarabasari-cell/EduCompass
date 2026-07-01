@@ -20,8 +20,15 @@ export function AnalyticsPage() {
   const [completion, setCompletion] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [isCached, setIsCached] = useState(false);
 
   const { user, loading: authLoading } = useAuth();
+
+  const analyticsCacheKey = user
+    ? `educompass_analytics_overview_v1_${user.id}`
+    : 'educompass_analytics_overview_v1';
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -32,7 +39,26 @@ export function AnalyticsPage() {
   const loadAnalytics = async () => {
     try {
       setError(null);
+      setIsCached(false);
       setLoading(true);
+
+      const cached = sessionStorage.getItem(analyticsCacheKey);
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Date.now() - parsed.timestamp < CACHE_TTL) {
+            setSummary(parsed.summary);
+            setDistribution(parsed.distribution);
+            setCompletion(parsed.completion);
+            setLastUpdated(new Date(parsed.timestamp).toLocaleString());
+            setIsCached(true);
+            setLoading(false);
+            return;
+          }
+        } catch (cacheError) {
+          console.warn('Invalid analytics cache, ignoring:', cacheError);
+        }
+      }
 
       const timeoutId = window.setTimeout(() => {
         setError('Analytics are taking too long to load. Please refresh the page.');
@@ -42,17 +68,35 @@ export function AnalyticsPage() {
       const overviewRes = await analyticsService.getOverview();
       window.clearTimeout(timeoutId);
 
-      setSummary({
+      const newSummary = {
         totalBoards: overviewRes.data.totalBoards,
         totalResources: overviewRes.data.totalResources,
         completedResources: overviewRes.data.completedResources,
         averageScore: overviewRes.data.averageScore,
-      });
+        averageProgress: overviewRes.data.averageProgress,
+        quizzesCompleted: overviewRes.data.quizzesCompleted,
+        assignmentCompletionRate: overviewRes.data.assignmentCompletionRate,
+      };
+
+      setSummary(newSummary);
       setDistribution(overviewRes.data.distribution);
       setCompletion(overviewRes.data.completion);
+      setLastUpdated(new Date().toLocaleString());
+
+      sessionStorage.setItem(
+        analyticsCacheKey,
+        JSON.stringify({
+          timestamp: Date.now(),
+          summary: newSummary,
+          distribution: overviewRes.data.distribution,
+          completion: overviewRes.data.completion,
+        }),
+      );
     } catch (err: any) {
       console.error('Error loading analytics:', err);
-      setError(err?.message || 'Failed to load analytics. Please try again.');
+      setError(
+        err?.response?.data?.error || err?.message || 'Failed to load analytics. Please try again.',
+      );
     } finally {
       setLoading(false);
     }
@@ -134,6 +178,19 @@ export function AnalyticsPage() {
       <div>
         <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Learning Analytics</h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">Track your progress and performance</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-2">
+          {lastUpdated && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Last updated: {lastUpdated} {isCached ? '(cached)' : ''}
+            </p>
+          )}
+          <button
+            onClick={loadAnalytics}
+            className="inline-flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+          >
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -148,12 +205,31 @@ export function AnalyticsPage() {
             <p className="text-4xl font-bold text-yellow-400">{summary.totalResources}</p>
           </div>
           <div className="card-elevated p-6 space-y-2">
-            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Completed</p>
-            <p className="text-4xl font-bold text-green-400">{summary.completedResources}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Completion Rate</p>
+            <p className="text-4xl font-bold text-green-400">
+              {completion?.total > 0 ? `${Math.round((completion.completed / completion.total) * 100)}%` : '0%'}
+            </p>
           </div>
           <div className="card-elevated p-6 space-y-2">
             <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Average Score</p>
             <p className="text-4xl font-bold text-blue-400">{summary.averageScore}%</p>
+          </div>
+        </div>
+      )}
+
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="card-elevated p-6 space-y-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Average Progress</p>
+            <p className="text-3xl font-bold text-indigo-400">{summary.averageProgress}%</p>
+          </div>
+          <div className="card-elevated p-6 space-y-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Quizzes Completed</p>
+            <p className="text-3xl font-bold text-emerald-400">{summary.quizzesCompleted}</p>
+          </div>
+          <div className="card-elevated p-6 space-y-2">
+            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Assignment Completion</p>
+            <p className="text-3xl font-bold text-pink-400">{summary.assignmentCompletionRate}%</p>
           </div>
         </div>
       )}

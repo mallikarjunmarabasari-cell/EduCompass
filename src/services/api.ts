@@ -46,6 +46,7 @@ supabase.auth.onAuthStateChange((_event, session) => {
 // Boards
 export const boardService = {
   getAll: () => API.get<Board[]>('/boards'),
+  getById: (id: string) => API.get<Board>(`/boards/${id}`),
   create: (board: Omit<Board, 'id' | 'createdAt' | 'updatedAt'>) => API.post<Board>('/boards', board),
   update: (id: string, board: Partial<Board>) => API.patch<Board>(`/boards/${id}`, board),
   delete: (id: string) => API.delete(`/boards/${id}`),
@@ -91,6 +92,28 @@ export const assignmentService = {
 
 // Analytics
 export const analyticsService = {
+  getOverview: () =>
+    API.get<{
+      totalBoards: number;
+      totalResources: number;
+      completedResources: number;
+      averageScore: number;
+      averageProgress: number;
+      quizzesCompleted: number;
+      assignmentCompletionRate: number;
+      distribution: {
+        Video: number;
+        Notes: number;
+        PDF: number;
+        Practice: number;
+        Reading: number;
+      };
+      completion: {
+        completed: number;
+        pending: number;
+        total: number;
+      };
+    }>('/analytics/overview'),
   getSummary: () =>
     API.get<{
       totalBoards: number;

@@ -1205,7 +1205,7 @@ app.get("/api/analytics/overview", async (req, res) => {
     const boardIds = boards?.map((b) => b.id) || [];
     const { data: resources, error: resourcesError } = await supabase
       .from("resources")
-      .select("status, category, latest_assignment_score")
+      .select("status, category, latest_assignment_score, progress, assignment_completed")
       .in("board_id", boardIds);
 
     if (resourcesError) throw resourcesError;
@@ -1237,20 +1237,32 @@ app.get("/api/analytics/overview", async (req, res) => {
       Reading: 0,
     };
 
+    let totalProgress = 0;
+    let quizzesCompleted = 0;
+
     resources?.forEach((resource) => {
       if (resource.category && distribution.hasOwnProperty(resource.category)) {
         distribution[resource.category]++;
+      }
+      totalProgress += resource.progress || 0;
+      if (resource.assignment_completed) {
+        quizzesCompleted += 1;
       }
     });
 
     const completed = completedResources;
     const pending = totalResources - completed;
+    const averageProgress = totalResources > 0 ? Math.round(totalProgress / totalResources) : 0;
+    const assignmentCompletionRate = totalResources > 0 ? Math.round((quizzesCompleted / totalResources) * 100) : 0;
 
     res.json({
       totalBoards,
       totalResources,
       completedResources,
       averageScore,
+      averageProgress,
+      quizzesCompleted,
+      assignmentCompletionRate,
       distribution,
       completion: {
         completed,
