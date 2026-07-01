@@ -6,7 +6,7 @@ import type { Assignment } from '../../types';
 interface AssignmentModalProps {
   resourceId: string;
   onClose: () => void;
-  onComplete: () => void;
+  onComplete: (score: number) => void;
 }
 
 export function AssignmentModal({ resourceId, onClose, onComplete }: AssignmentModalProps) {
@@ -109,7 +109,7 @@ export function AssignmentModal({ resourceId, onClose, onComplete }: AssignmentM
                 : 'Keep practicing! You will improve with more study.'}
           </p>
           <button
-            onClick={onComplete}
+            onClick={() => onComplete(score ?? 0)}
             className="w-full btn-primary"
           >
             Complete & Continue

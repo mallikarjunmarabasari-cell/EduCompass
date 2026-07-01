@@ -184,11 +184,15 @@ export function BoardPage() {
   };
 
   const handleUpdateResource = async (resourceId: string, updates: Partial<Resource>) => {
+    setResources((prev) =>
+      prev.map((r) => (r.id === resourceId ? { ...r, ...updates } : r)),
+    );
+
     try {
       await resourceService.update(resourceId, updates);
-      await loadBoard();
     } catch (err) {
       console.error('Error updating resource:', err);
+      await loadBoard();
     }
   };
 

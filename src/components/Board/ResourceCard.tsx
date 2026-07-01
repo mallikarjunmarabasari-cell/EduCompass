@@ -270,7 +270,15 @@ export function ResourceCard({
         )}
 
         {/* Assignment Badge */}
-        <AssignmentBadge resource={resource} />
+        <AssignmentBadge
+          resource={resource}
+          onComplete={(score) =>
+            onUpdate(resource.id, {
+              assignmentCompleted: true,
+              latestAssignmentScore: score,
+            })
+          }
+        />
 
         {/* Status and Link */}
         <div className="flex gap-2 pt-2">
