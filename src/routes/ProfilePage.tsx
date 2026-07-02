@@ -9,7 +9,15 @@ export function ProfilePage() {
   const { user, session, signOut, updateProfile } = useAuth();
   const [userName, setUserName] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
-  const [stats, setStats] = useState({ boards: 0, resources: 0, completed: 0 });
+  const [stats, setStats] = useState({
+    boards: 0,
+    resources: 0,
+    completed: 0,
+    masteryScore: 0,
+    assignmentCompletionRate: 0,
+    averageProgress: 0,
+    categoryBreakdown: { Video: 0, Notes: 0, PDF: 0, Practice: 0, Reading: 0 },
+  });
   const [tempName, setTempName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -39,19 +47,57 @@ export function ProfilePage() {
       const boardsRes = await boardService.getAll();
       let totalResources = 0;
       let completedResources = 0;
+      let totalProgress = 0;
+      let assignmentCompletedCount = 0;
+      let totalScore = 0;
+      let scoredResourceCount = 0;
+      const categoryBreakdown = { Video: 0, Notes: 0, PDF: 0, Practice: 0, Reading: 0 };
 
       for (const board of boardsRes.data) {
         const resRes = await resourceService.getByBoard(board.id);
-        totalResources += resRes.data.length;
-        completedResources += resRes.data.filter(
-          (r) => r.status === 'completed' && r.assignmentCompleted
-        ).length;
+        const resources = resRes.data;
+        
+        totalResources += resources.length;
+        
+        resources.forEach((r) => {
+          // Count completed (status + assignment)
+          if (r.status === 'completed' && r.assignmentCompleted) {
+            completedResources += 1;
+          }
+
+          // Accumulate progress
+          totalProgress += r.progress || 0;
+
+          // Count assignment completions
+          if (r.assignmentCompleted) {
+            assignmentCompletedCount += 1;
+          }
+
+          // Accumulate scores for mastery
+          if (r.latestAssignmentScore !== undefined && r.latestAssignmentScore !== null) {
+            totalScore += r.latestAssignmentScore;
+            scoredResourceCount += 1;
+          }
+
+          // Tally by category
+          if (r.category && categoryBreakdown.hasOwnProperty(r.category)) {
+            categoryBreakdown[r.category]++;
+          }
+        });
       }
+
+      const masteryScore = scoredResourceCount > 0 ? Math.round(totalScore / scoredResourceCount) : 0;
+      const averageProgress = totalResources > 0 ? Math.round(totalProgress / totalResources) : 0;
+      const assignmentCompletionRate = totalResources > 0 ? Math.round((assignmentCompletedCount / totalResources) * 100) : 0;
 
       setStats({
         boards: boardsRes.data.length,
         resources: totalResources,
         completed: completedResources,
+        masteryScore,
+        assignmentCompletionRate,
+        averageProgress,
+        categoryBreakdown,
       });
     } catch (err) {
       console.error('Error loading profile:', err);
@@ -152,6 +198,46 @@ export function ProfilePage() {
         <div className="card-elevated p-6 text-center space-y-2">
           <p className="text-gray-600 dark:text-gray-400 text-sm">Completed</p>
           <p className="text-3xl font-bold text-green-400">{stats.completed}</p>
+        </div>
+      </div>
+
+      {/* Performance Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card-elevated p-6 text-center space-y-2">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">Mastery Score</p>
+          <p className="text-3xl font-bold text-indigo-400">{stats.masteryScore}%</p>
+          <p className="text-xs text-gray-500 dark:text-gray-500">Weighted avg of quiz scores</p>
+        </div>
+        <div className="card-elevated p-6 text-center space-y-2">
+          <p className="text-gray-600 dark:text-gray-400 text-sm">Assignment Completion</p>
+          <p className="text-3xl font-bold text-emerald-400">{stats.assignmentCompletionRate}%</p>
+          <p className="text-xs text-gray-500 dark:text-gray-500">{stats.completed} of {stats.resources} resources</p>
+        </div>
+      </div>
+
+      {/* Progress & Category Breakdown */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="card-elevated p-6 space-y-3">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">Average Progress</p>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 progress-bar h-3">
+              <div className="progress-fill" style={{ width: `${stats.averageProgress}%` }}></div>
+            </div>
+            <span className="text-lg font-bold text-pink-400">{stats.averageProgress}%</span>
+          </div>
+        </div>
+        <div className="card-elevated p-6 space-y-3">
+          <p className="text-sm font-semibold text-gray-900 dark:text-white">Resources by Category</p>
+          <div className="space-y-2 text-xs">
+            {Object.entries(stats.categoryBreakdown).map(([category, count]) => (
+              count > 0 && (
+                <div key={category} className="flex items-center justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">{category}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">{count}</span>
+                </div>
+              )
+            ))}
+          </div>
         </div>
       </div>
 

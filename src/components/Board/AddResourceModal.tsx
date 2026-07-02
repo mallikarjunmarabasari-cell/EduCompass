@@ -11,7 +11,7 @@ interface AddResourceModalProps {
 export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
   const [title, setTitle] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
   const [category, setCategory] = useState<Resource['category']>('Reading');
   const [status, setStatus] = useState<Resource['status']>('todo');
   const [description, setDescription] = useState('');
@@ -43,7 +43,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
     // Check for either URL or PDF file (at least one required)
     if (!title.trim()) return;
     const hasUrls = urls.some(url => url.trim());
-    if (!hasUrls && !pdfFile) return;
+    if (!hasUrls && pdfFiles.length === 0) return;
 
     setLoading(true);
     try {
@@ -51,31 +51,37 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
       let primaryUrl = '';
       let resourceCategory = category;
 
-      // Handle PDF file upload
-      if (pdfFile) {
-        const formData = new FormData();
-        formData.append('file', pdfFile);
-        
-        try {
-          console.log("📤 Uploading PDF file:", pdfFile.name);
-          const uploadResponse = await fetch('/api/upload/pdf', {
-            method: 'POST',
-            body: formData,
-          });
+      // Handle multiple PDF file uploads
+      const pdfUrls: string[] = [];
+      if (pdfFiles.length > 0) {
+        for (const pdfFile of pdfFiles) {
+          const formData = new FormData();
+          formData.append('file', pdfFile);
+          
+          try {
+            console.log("📤 Uploading PDF file:", pdfFile.name);
+            const uploadResponse = await fetch('/api/upload/pdf', {
+              method: 'POST',
+              body: formData,
+            });
 
-          if (uploadResponse.ok) {
-            const uploadResult = await uploadResponse.json();
-            console.log("✅ PDF uploaded, response:", uploadResult);
-            const { fileUrl } = uploadResult;
-            primaryUrl = fileUrl;
-            if (!resourceCategory.includes('PDF')) {
-              resourceCategory = 'PDF';
+            if (uploadResponse.ok) {
+              const uploadResult = await uploadResponse.json();
+              console.log("✅ PDF uploaded, response:", uploadResult);
+              const { fileUrl } = uploadResult;
+              pdfUrls.push(fileUrl);
+              if (!resourceCategory.includes('PDF')) {
+                resourceCategory = 'PDF';
+              }
             }
-            console.log("✅ PDF URL set to:", primaryUrl);
+          } catch (error) {
+            console.error('Error uploading PDF:', error);
+            pdfUrls.push(`pdf://${pdfFile.name}`);
           }
-        } catch (error) {
-          console.error('Error uploading PDF:', error);
-          primaryUrl = `pdf://${pdfFile.name}`;
+        }
+        if (pdfUrls.length > 0) {
+          primaryUrl = pdfUrls[0];
+          console.log("✅ Primary PDF URL set to:", primaryUrl);
         }
       }
 
@@ -94,19 +100,15 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
         }
       }
 
-      // Collect all URLs (both manual entries and PDF if present)
+      // Collect all URLs (PDFs first, then manual entries)
       let finalUrls: string[] = [];
+      
+      // Add all PDF URLs first
+      finalUrls.push(...pdfUrls);
       
       // Add all manual URLs
       const manualUrls = urls.filter(url => url.trim());
       finalUrls.push(...manualUrls);
-      
-      // Add PDF URL if it exists and not already in manual URLs
-      if (primaryUrl && primaryUrl.includes('/uploads/pdfs')) {
-        if (!finalUrls.includes(primaryUrl)) {
-          finalUrls.unshift(primaryUrl); // Add PDF as first
-        }
-      }
       
       // If still no URLs, use primaryUrl
       if (finalUrls.length === 0 && primaryUrl) {
@@ -221,35 +223,41 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
 
             {/* PDF Upload Section */}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">PDF File (Optional)</label>
-              {pdfFile ? (
-                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-center gap-2">
-                    <Upload size={18} className="text-yellow-400" />
-                    <span className="text-sm text-gray-900 dark:text-white">{pdfFile.name}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setPdfFile(null)}
-                    className="p-1 hover:bg-red-500/20 rounded transition text-red-500"
-                    title="Remove PDF"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">PDF Files (Optional, Multiple)</label>
+              {pdfFiles.length > 0 ? (
+                <div className="space-y-2 mb-2">
+                  {pdfFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-center gap-2">
+                        <Upload size={18} className="text-yellow-400" />
+                        <span className="text-sm text-gray-900 dark:text-white">{file.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPdfFiles(pdfFiles.filter((_, i) => i !== index));
+                        }}
+                        className="p-1 hover:bg-red-500/20 rounded transition text-red-500"
+                        title="Remove PDF"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ) : (
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      setPdfFile(file);
-                    }
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
-                />
-              )}
+              ) : null}
+              <input
+                type="file"
+                accept=".pdf"
+                multiple
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  if (files.length > 0) {
+                    setPdfFiles([...pdfFiles, ...files]);
+                  }
+                }}
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
+              />
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">

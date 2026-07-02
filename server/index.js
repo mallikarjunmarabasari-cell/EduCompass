@@ -1205,7 +1205,9 @@ app.get("/api/analytics/overview", async (req, res) => {
     const boardIds = boards?.map((b) => b.id) || [];
     const { data: resources, error: resourcesError } = await supabase
       .from("resources")
-      .select("status, category, latest_assignment_score, progress, assignment_completed")
+      .select(
+        "status, category, latest_assignment_score, progress, assignment_completed",
+      )
       .in("board_id", boardIds);
 
     if (resourcesError) throw resourcesError;
@@ -1252,8 +1254,12 @@ app.get("/api/analytics/overview", async (req, res) => {
 
     const completed = completedResources;
     const pending = totalResources - completed;
-    const averageProgress = totalResources > 0 ? Math.round(totalProgress / totalResources) : 0;
-    const assignmentCompletionRate = totalResources > 0 ? Math.round((quizzesCompleted / totalResources) * 100) : 0;
+    const averageProgress =
+      totalResources > 0 ? Math.round(totalProgress / totalResources) : 0;
+    const assignmentCompletionRate =
+      totalResources > 0
+        ? Math.round((quizzesCompleted / totalResources) * 100)
+        : 0;
 
     res.json({
       totalBoards,
@@ -1538,21 +1544,38 @@ app.get("/api/resources/:resourceId/extracted-content", async (req, res) => {
 // PDF UPLOAD ENDPOINT
 // ============================================================================
 
-app.post("/api/upload/pdf", upload.single("file"), async (req, res) => {
+app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
     }
 
-    const fileUrl = `/uploads/pdfs/${req.file.filename}`;
-    console.log("📄 PDF uploaded successfully:", fileUrl);
+    // Handle single file case (for backward compatibility)
+    if (req.files.length === 1) {
+      const file = req.files[0];
+      const fileUrl = `/uploads/pdfs/${file.filename}`;
+      console.log("📄 PDF uploaded successfully:", fileUrl);
 
-    res.json({
-      success: true,
-      fileUrl: fileUrl,
-      filename: req.file.originalname,
-      size: req.file.size,
-    });
+      res.json({
+        success: true,
+        fileUrl: fileUrl,
+        filename: file.originalname,
+        size: file.size,
+      });
+    } else {
+      // Handle multiple files
+      const uploadedFiles = req.files.map(file => ({
+        fileUrl: `/uploads/pdfs/${file.filename}`,
+        filename: file.originalname,
+        size: file.size,
+      }));
+      console.log(`📄 ${req.files.length} PDFs uploaded successfully`);
+
+      res.json({
+        success: true,
+        files: uploadedFiles,
+      });
+    }
   } catch (err) {
     console.error("Error uploading PDF:", err);
     res.status(500).json({ error: err.message });

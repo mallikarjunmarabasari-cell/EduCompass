@@ -1,4 +1,4 @@
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Lock } from 'lucide-react';
 import { useState } from 'react';
 import { AssignmentModal } from '../Assignment/AssignmentModal';
 import type { Resource } from '../../types';
@@ -15,7 +15,8 @@ export function AssignmentBadge({ resource, onComplete }: AssignmentBadgeProps) 
     return null;
   }
 
-  const assignmentPending = !resource.assignmentCompleted;
+  const isUnlocked = resource.status === 'completed';
+  const needsQuiz = !resource.assignmentCompleted;
 
   return (
     <>
@@ -27,16 +28,23 @@ export function AssignmentBadge({ resource, onComplete }: AssignmentBadgeProps) 
               Score: {resource.latestAssignmentScore ?? 0}%
             </span>
           </>
-        ) : (
+        ) : isUnlocked ? (
           <>
             <AlertCircle size={14} className="text-orange-500" />
             <span className="text-orange-700 dark:text-orange-300 font-medium">
-              Practice quiz available
+              Quiz ready to take
+            </span>
+          </>
+        ) : (
+          <>
+            <Lock size={14} className="text-blue-500" />
+            <span className="text-blue-700 dark:text-blue-300 font-medium">
+              Finish resource to unlock quiz
             </span>
           </>
         )}
 
-        {assignmentPending && (
+        {needsQuiz && isUnlocked && (
           <button
             onClick={() => setShowAssignment(true)}
             className="ml-auto px-2 py-1 bg-blue-500 text-white text-xs font-semibold rounded hover:bg-blue-600 transition"
