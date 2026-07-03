@@ -45,7 +45,7 @@ export function ResourceCard({
   const handleGenerateAI = async () => {
     if (aiLoaded) return;
 
-    const requestUrl = resource.url || (resource.urls && resource.urls.length > 0 ? resource.urls[0] : '');
+    const requestUrl = selectedResourceUrl || resource.url || (resource.urls && resource.urls.length > 0 ? resource.urls[0] : '');
     if (!requestUrl) {
       alert('No valid resource URL available to generate AI summary. Please add a link or PDF.');
       return;
