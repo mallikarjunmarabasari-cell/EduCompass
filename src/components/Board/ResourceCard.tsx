@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trash2, ExternalLink, ChevronDown } from 'lucide-react';
 import { getCategoryColor } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
@@ -31,6 +31,7 @@ export function ResourceCard({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showYoutubePreview, setShowYoutubePreview] = useState(false);
   const [selectedYoutubeUrl, setSelectedYoutubeUrl] = useState<string>('');
+  const [selectedResourceUrl, setSelectedResourceUrl] = useState<string>('');
   const [aiSummary, setAISummary] = useState<{ summary: string; keyPoints: string[] } | null>(null);
   const [aiFlashcards, setAIFlashcards] = useState<any>(null);
   const [aiLoading, setAILoading] = useState(false);
@@ -84,6 +85,13 @@ export function ResourceCard({
       setAILoading(false);
     }
   };
+
+  useEffect(() => {
+    const firstUrl = resource.urls && resource.urls.length > 0
+      ? resource.urls[0]
+      : resource.url || '';
+    setSelectedResourceUrl(firstUrl);
+  }, [resource.url, resource.urls]);
 
   const statuses: Array<Resource['status']> = ['todo', 'in-progress', 'completed'];
 
@@ -160,6 +168,7 @@ export function ResourceCard({
                           <button
                             onClick={() => {
                               setSelectedYoutubeUrl(link);
+                              setSelectedResourceUrl(link);
                               setShowYoutubePreview(true);
                             }}
                             className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
@@ -169,15 +178,14 @@ export function ResourceCard({
                             <span className="truncate">YouTube</span>
                           </button>
                         ) : (
-                          <a
-                            href={link}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => setSelectedResourceUrl(link)}
                             className="flex-1 text-left text-xs px-2 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition truncate"
                             title={link}
                           >
                             {displayName}
-                          </a>
+                          </button>
                         )}
                       </div>
                     );
@@ -193,6 +201,7 @@ export function ResourceCard({
                     <button
                       onClick={() => {
                         setSelectedYoutubeUrl(resource.url);
+                        setSelectedResourceUrl(resource.url);
                         setShowYoutubePreview(true);
                       }}
                       className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
@@ -312,7 +321,7 @@ export function ResourceCard({
           </div>
           {/* Open first primary resource link */}
           <a
-            href={resource.urls && resource.urls.length > 0 ? resource.urls[0] : resource.url}
+            href={selectedResourceUrl || (resource.urls && resource.urls.length > 0 ? resource.urls[0] : resource.url)}
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition"
