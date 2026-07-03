@@ -141,11 +141,14 @@ export function AnalyticsPage() {
 
   const distributionData = distribution
     ? [
-        { name: 'Video', value: distribution.Video },
-        { name: 'Notes', value: distribution.Notes },
-        { name: 'PDF', value: distribution.PDF },
-        { name: 'Practice', value: distribution.Practice },
-        { name: 'Reading', value: distribution.Reading },
+        { name: 'Video', value: distribution.Video || 0 },
+        { name: 'Notes', value: distribution.Notes || 0 },
+        { name: 'PDF', value: distribution.PDF || 0 },
+        { name: 'Practice', value: distribution.Practice || 0 },
+        { name: 'Reading', value: distribution.Reading || 0 },
+        { name: 'Code', value: distribution.Code || 0 },
+        { name: 'Text', value: distribution.Text || 0 },
+        { name: 'Archive', value: distribution.Archive || 0 },
       ]
     : [];
 
@@ -167,6 +170,9 @@ export function AnalyticsPage() {
     PDF: '#34D399',
     Practice: '#F97316',
     Reading: '#A78BFA',
+    Code: '#818CF8',
+    Text: '#94A3B8',
+    Archive: '#F59E0B',
   };
 
   const completionColors = ['#10B981', '#6B7280'];
