@@ -37,14 +37,54 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === "application/pdf") {
+    // Supported MIME types for various file formats
+    const supportedMimeTypes = [
+      "application/pdf",
+      // Code files
+      "text/x-python",
+      "text/x-java",
+      "application/x-java-source",
+      "text/javascript",
+      "application/typescript",
+      "text/x-c++src",
+      "text/x-csrc",
+      "text/x-csharp",
+      "text/x-ruby",
+      "text/x-go",
+      "text/x-rust",
+      "text/x-php",
+      "text/x-swift",
+      // Generic text
+      "text/plain",
+      "text/markdown",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      // Archives
+      "application/zip",
+      "application/x-rar-compressed",
+      "application/x-7z-compressed",
+      "application/x-tar",
+      "application/gzip",
+      "application/x-tar+gzip",
+    ];
+
+    if (
+      supportedMimeTypes.includes(file.mimetype) ||
+      file.originalname.match(
+        /\\.(py|java|js|ts|cpp|c|cs|rb|go|rs|php|swift|txt|md|doc|docx|zip|rar|7z|tar|gz)$/i,
+      )
+    ) {
       cb(null, true);
     } else {
-      cb(new Error("Only PDF files are allowed"));
+      cb(
+        new Error(
+          `File type not supported. Supported formats: PDF, Code files (.py, .java, .js, .ts, .cpp, .c, .cs, .rb, .go, .rs, .php, .swift), Text files (.txt, .md, .doc, .docx), Archives (.zip, .rar, .7z, .tar, .gz)`,
+        ),
+      );
     }
   },
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB
+    fileSize: 100 * 1024 * 1024, // 100MB (increased from 50MB)
   },
 });
 
@@ -1348,6 +1388,27 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
         console.error("Error extracting PDF text:", pdfError.message);
         content = `[PDF Document]\n\nNote: Could not extract text from PDF. Error: ${pdfError.message}`;
       }
+    } else if (/\.(txt|md|py|java|js|ts|jsx|tsx|cpp|c|cs|rb|go|rs|php|swift|json|yaml|yml|xml|html|css|sql)$/i.test(url)) {
+      // Handle uploaded text/code files
+      extractedType = "file_text";
+      const filePath = url.startsWith("/")
+        ? path.resolve(process.cwd(), url.replace(/^\/+/, ""))
+        : path.resolve(process.cwd(), url);
+
+      console.log(`📄 Processing text/code file: ${filePath}`);
+
+      try {
+        if (fs.existsSync(filePath)) {
+          const fileContent = fs.readFileSync(filePath, "utf8");
+          content = `[Uploaded File Content]\n\nFile: ${path.basename(filePath)}\n\n${fileContent}`;
+          console.log(`📄 Successfully read text/code file: ${filePath}`);
+        } else {
+          throw new Error(`File not found at ${filePath}`);
+        }
+      } catch (fileError) {
+        console.error("Error reading uploaded text/code file:", fileError.message);
+        content = `[Uploaded File Content]\n\nNote: Could not read the uploaded text/code file. Error: ${fileError.message}`;
+      }
     } else {
       extractedType = "article_text";
       try {
@@ -1564,7 +1625,7 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
       });
     } else {
       // Handle multiple files
-      const uploadedFiles = req.files.map(file => ({
+      const uploadedFiles = req.files.map((file) => ({
         fileUrl: `/uploads/pdfs/${file.filename}`,
         filename: file.originalname,
         size: file.size,
