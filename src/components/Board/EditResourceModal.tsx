@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { extractYouTubeId, getYouTubeThumbnail } from '../../utils/linkUtils';
+import { extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile } from '../../utils/linkUtils';
 
 interface EditResourceModalProps {
   resource: Resource;
@@ -81,6 +81,11 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
             if (uploadResponse.ok) {
               const { fileUrl } = await uploadResponse.json();
               pdfUrls.push(fileUrl);
+
+              const inferredCategory = inferCategoryFromFile(pdfFile.name);
+              if (inferredCategory) {
+                resourceCategory = inferredCategory;
+              }
             }
           } catch (error) {
             console.error('Error uploading PDF:', error);
@@ -212,9 +217,9 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
               ))}
             </div>
 
-            {/* PDF Upload Section */}
+            {/* File Upload Section */}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">PDF Files (Optional, Multiple)</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Files (Optional, Multiple - PDF, Code, Text, Archives)</label>
               {pdfFiles.length > 0 ? (
                 <div className="space-y-2 mb-2">
                   {pdfFiles.map((file, index) => (
@@ -230,7 +235,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
                           handleChange();
                         }}
                         className="p-1 hover:bg-red-500/20 rounded transition text-red-500"
-                        title="Remove PDF"
+                        title="Remove file"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -240,7 +245,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
               ) : null}
               <input
                 type="file"
-                accept=".pdf"
+                accept={getAllowedFileAccept()}
                 multiple
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
@@ -276,6 +281,9 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
                 <option value="PDF">PDF</option>
                 <option value="Practice">Practice Problems</option>
                 <option value="Reading">Reading</option>
+                <option value="Code">Code</option>
+                <option value="Text">Text</option>
+                <option value="Archive">Archive</option>
               </select>
             </div>
 

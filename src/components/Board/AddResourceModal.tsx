@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import { detectCategory, extractYouTubeId, getYouTubeThumbnail } from '../../utils/linkUtils';
+import { detectCategory, extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 
 interface AddResourceModalProps {
@@ -67,11 +67,13 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
 
             if (uploadResponse.ok) {
               const uploadResult = await uploadResponse.json();
-              console.log("✅ PDF uploaded, response:", uploadResult);
+              console.log("✅ File uploaded, response:", uploadResult);
               const { fileUrl } = uploadResult;
               pdfUrls.push(fileUrl);
-              if (!resourceCategory.includes('PDF')) {
-                resourceCategory = 'PDF';
+
+              const inferredCategory = inferCategoryFromFile(pdfFile.name);
+              if (inferredCategory) {
+                resourceCategory = inferredCategory;
               }
             }
           } catch (error) {
@@ -221,9 +223,9 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
               ))}
             </div>
 
-            {/* PDF Upload Section */}
+            {/* File Upload Section */}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">PDF Files (Optional, Multiple)</label>
+              <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Files (Optional, Multiple - PDF, Code, Text, Archives)</label>
               {pdfFiles.length > 0 ? (
                 <div className="space-y-2 mb-2">
                   {pdfFiles.map((file, index) => (
@@ -238,7 +240,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
                           setPdfFiles(pdfFiles.filter((_, i) => i !== index));
                         }}
                         className="p-1 hover:bg-red-500/20 rounded transition text-red-500"
-                        title="Remove PDF"
+                        title="Remove file"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -248,7 +250,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
               ) : null}
               <input
                 type="file"
-                accept=".pdf"
+                accept={getAllowedFileAccept()}
                 multiple
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
@@ -261,7 +263,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 pt-2">
-              💡 Tip: You can add both links and a PDF file. At least one is required.
+              💡 Tip: You can add both links and files (PDF, Code, Text, Archives). At least one is required.
             </p>
           </div>
 
@@ -280,6 +282,9 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
                 <option value="PDF">PDF</option>
                 <option value="Practice">Practice Problems</option>
                 <option value="Reading">Reading</option>
+                <option value="Code">Code</option>
+                <option value="Text">Text</option>
+                <option value="Archive">Archive</option>
               </select>
             </div>
 
