@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import type { SearchFilters } from '../../types';
+import type { Resource, SearchFilters } from '../../types';
 
-const CATEGORIES = ['Video', 'Notes', 'PDF', 'Practice', 'Reading'];
+const CATEGORIES: Resource['category'][] = ['Video', 'Notes', 'PDF', 'Practice', 'Reading', 'Code', 'Text', 'Archive'];
 const STATUSES = [
   { value: 'todo', label: 'To Do' },
   { value: 'in-progress', label: 'In Progress' },
