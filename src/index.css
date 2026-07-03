@@ -50,6 +50,18 @@ body {
   @apply badge bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200;
 }
 
+.badge-code {
+  @apply badge bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200;
+}
+
+.badge-text {
+  @apply badge bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200;
+}
+
+.badge-archive {
+  @apply badge bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-200;
+}
+
 .progress-bar {
   @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden;
 }
