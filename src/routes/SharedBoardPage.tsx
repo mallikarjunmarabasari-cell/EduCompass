@@ -118,10 +118,20 @@ export function SharedBoardPage() {
     );
   }
 
-  const filteredResources = resources.filter((r) =>
-    r.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    r.url.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredResources = resources.filter((r) => {
+    const query = searchTerm.toLowerCase();
+    const tags = Array.isArray(r.tags)
+      ? r.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name)).join(' ')
+      : '';
+
+    return (
+      r.title.toLowerCase().includes(query) ||
+      r.description?.toLowerCase().includes(query) ||
+      r.url.toLowerCase().includes(query) ||
+      r.urls?.some((url) => url.toLowerCase().includes(query)) ||
+      tags.toLowerCase().includes(query)
+    );
+  });
 
   const todoResources = filteredResources.filter((r) => r.status === 'todo');
   const inProgressResources = filteredResources.filter((r) => r.status === 'in-progress');
