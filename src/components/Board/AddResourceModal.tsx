@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import { detectCategory, extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile } from '../../utils/linkUtils';
+import { detectCategory, extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 
 interface AddResourceModalProps {
@@ -72,9 +72,10 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
               pdfUrls.push(fileUrl);
 
               const inferredCategory = inferCategoryFromFile(pdfFile.name);
-              if (inferredCategory) {
-                resourceCategory = inferredCategory;
-              }
+              resourceCategory = resolveResourceCategory({
+                selectedCategory: resourceCategory,
+                inferredCategory,
+              });
             }
           } catch (error) {
             console.error('Error uploading PDF:', error);

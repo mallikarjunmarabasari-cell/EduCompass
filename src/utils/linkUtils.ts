@@ -1,3 +1,5 @@
+import type { Resource } from '../types';
+
 export const SUPPORTED_FILE_TYPES = {
   pdf: { extensions: ['.pdf'], category: 'PDF' },
   code: { extensions: ['.py', '.java', '.js', '.ts', '.cpp', '.c', '.cs', '.rb', '.go', '.rs', '.php', '.swift'], category: 'Code' },
@@ -21,6 +23,16 @@ export function inferCategoryFromFile(fileName: string): 'PDF' | 'Code' | 'Text'
   }
 
   return null;
+}
+
+export function resolveResourceCategory({
+  selectedCategory,
+  inferredCategory,
+}: {
+  selectedCategory: Resource['category'];
+  inferredCategory: 'PDF' | 'Code' | 'Text' | 'Archive' | null;
+}): Resource['category'] {
+  return inferredCategory ? (inferredCategory as Resource['category']) : selectedCategory;
 }
 
 export function extractYouTubeId(url: string): string | null {
