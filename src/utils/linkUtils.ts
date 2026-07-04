@@ -35,6 +35,18 @@ export function resolveResourceCategory({
   return inferredCategory ? (inferredCategory as Resource['category']) : selectedCategory;
 }
 
+export function hasResourceFormChanges({
+  hasChanges,
+  hasMeaningfulChanges,
+  hasFileChanges,
+}: {
+  hasChanges: boolean;
+  hasMeaningfulChanges: boolean;
+  hasFileChanges: boolean;
+}): boolean {
+  return hasChanges || hasMeaningfulChanges || hasFileChanges;
+}
+
 export function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,

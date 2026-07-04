@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
+import { extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
 
 interface EditResourceModalProps {
   resource: Resource;
@@ -31,6 +31,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   );
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [hasFileChanges, setHasFileChanges] = useState(false);
 
   const hasMeaningfulChanges = 
     title !== resource.title ||
@@ -53,6 +54,14 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   const handleRemoveUrl = (index: number) => {
     setUrls(urls.filter((_, i) => i !== index));
     handleChange();
+  };
+
+  const handleFileChange = (files: File[]) => {
+    if (files.length > 0) {
+      setPdfFiles((prev) => [...prev, ...files]);
+      setHasFileChanges(true);
+      handleChange();
+    }
   };
 
   const handleUrlChange = (index: number, newUrl: string) => {
@@ -135,7 +144,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         finalUrls = [primaryUrl];
       }
 
-      if (!hasMeaningfulChanges && pdfFiles.length === 0) {
+      if (!hasResourceFormChanges({ hasChanges, hasMeaningfulChanges, hasFileChanges }) && pdfFiles.length === 0) {
         onClose();
         return;
       }
@@ -244,6 +253,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
                         type="button"
                         onClick={() => {
                           setPdfFiles(pdfFiles.filter((_, i) => i !== index));
+                          setHasFileChanges(true);
                           handleChange();
                         }}
                         className="p-1 hover:bg-red-500/20 rounded transition text-red-500"
@@ -262,8 +272,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
                   if (files.length > 0) {
-                    setPdfFiles([...pdfFiles, ...files]);
-                    handleChange();
+                    handleFileChange(files);
                   }
                 }}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 cursor-pointer"
@@ -375,7 +384,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
             </button>
             <button
               type="submit"
-              disabled={loading || (!hasChanges && !hasMeaningfulChanges)}
+              disabled={loading || !hasResourceFormChanges({ hasChanges, hasMeaningfulChanges, hasFileChanges })}
               className="flex-1 py-2 px-4 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium disabled:opacity-50"
             >
               {loading ? 'Updating...' : 'Update Resource'}
