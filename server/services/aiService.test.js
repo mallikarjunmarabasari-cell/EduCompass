@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { buildFallbackContent } from './aiService.js';
+
+test('buildFallbackContent creates summary, key points, and flashcards from source text', () => {
+  const text = 'Artificial intelligence helps students organize study materials. It can summarize articles and generate flashcards. This makes review faster.';
+
+  const fallback = buildFallbackContent(text, 'article_text');
+
+  assert.match(fallback.summary, /Artificial intelligence/i);
+  assert.ok(Array.isArray(fallback.keyPoints));
+  assert.ok(fallback.keyPoints.length > 0);
+  assert.ok(Array.isArray(fallback.flashcards));
+  assert.ok(fallback.flashcards.length > 0);
+});

@@ -159,10 +159,38 @@ async function extractPDFText(pdfPath) {
   }
 }
 
-// Main AI content generation using Gemini
+function buildFallbackContent(content, contentType = "text") {
+  const cleanedContent = String(content || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const sentences = cleanedContent
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+
+  const summarySource = sentences.slice(0, 3).join(" ");
+  const summary = summarySource || `This ${contentType} was added to your study board.`;
+  const keyPoints = sentences.slice(0, 5).map((sentence) => sentence.replace(/^[•\-*]\s*/, ""));
+  const flashcards = sentences.slice(0, 5).map((sentence, index) => ({
+    question: `What is the main point of item ${index + 1}?`,
+    answer: sentence,
+  }));
+
+  return {
+    summary,
+    keyPoints,
+    flashcards,
+  };
+}
+
+// Main AI content generation using Gemini with a fallback path
 async function generateAIContent(content, contentType = "text") {
+  const fallbackContent = buildFallbackContent(content, contentType);
+
   if (!GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY not configured in environment variables");
+    console.warn("⚠️ GEMINI_API_KEY missing, using fallback AI content");
+    return fallbackContent;
   }
 
   try {
@@ -192,8 +220,11 @@ async function generateAIContent(content, contentType = "text") {
       flashcards,
     };
   } catch (error) {
-    console.error("❌ Error generating AI content:", error.message);
-    throw error;
+    console.warn(
+      "⚠️ Gemini generation failed, using fallback AI content:",
+      error.message,
+    );
+    return fallbackContent;
   }
 }
 
@@ -350,6 +381,7 @@ function parseFlashcards(response) {
 }
 
 export {
+  buildFallbackContent,
   generateAIContent,
   extractArticleText,
   extractPDFText,
