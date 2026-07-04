@@ -32,6 +32,15 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const hasMeaningfulChanges = 
+    title !== resource.title ||
+    JSON.stringify(urls) !== JSON.stringify(resource.urls && resource.urls.length > 0 ? resource.urls : [resource.url]) ||
+    category !== resource.category ||
+    status !== resource.status ||
+    description !== (resource.description || '') ||
+    moduleTag !== (resource.moduleTag || '') ||
+    tags.map((tag) => tag.name).join(',') !== (resource.tags || []).map((tag) => (typeof tag === 'string' ? tag : tag.name)).join(',');
+
   const handleChange = () => {
     setHasChanges(true);
   };
@@ -124,6 +133,11 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
       // If still no URLs, use primaryUrl
       if (finalUrls.length === 0 && primaryUrl) {
         finalUrls = [primaryUrl];
+      }
+
+      if (!hasMeaningfulChanges && pdfFiles.length === 0) {
+        onClose();
+        return;
       }
 
       await onUpdate({
@@ -361,7 +375,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
             </button>
             <button
               type="submit"
-              disabled={loading || !hasChanges}
+              disabled={loading || (!hasChanges && !hasMeaningfulChanges)}
               className="flex-1 py-2 px-4 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition font-medium disabled:opacity-50"
             >
               {loading ? 'Updating...' : 'Update Resource'}
