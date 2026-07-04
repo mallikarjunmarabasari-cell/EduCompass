@@ -1,13 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Search, X } from 'lucide-react';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
+  query?: string;
 }
 
-export function SearchBar({ onSearch, placeholder = 'Search resources by name, description, or tags...' }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+export function SearchBar({ onSearch, placeholder = 'Search resources by name, description, or tags...', query: controlledQuery = '' }: SearchBarProps) {
+  const [query, setQuery] = useState(controlledQuery);
+
+  useEffect(() => {
+    setQuery(controlledQuery);
+  }, [controlledQuery]);
 
   const handleSearch = useCallback((value: string) => {
     setQuery(value);

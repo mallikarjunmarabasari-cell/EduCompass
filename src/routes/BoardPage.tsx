@@ -310,7 +310,7 @@ export function BoardPage() {
 
       {/* Search and Filters */}
       <div className="space-y-4">
-        <SearchBar onSearch={handleSearch} />
+        <SearchBar onSearch={handleSearch} query={filters.query || ''} />
 
         {/* Result count when filtering */}
         {(searchMode || Object.keys(filters).length > 0) && resources.length > 0 && (
