@@ -1,5 +1,6 @@
 import { ResourceCard } from './ResourceCard';
 import type { Resource } from '../../types';
+import { getEmptyStateMessage } from '../../utils/filterUtils';
 
 interface ResourceColumnProps {
   title: string;
@@ -10,6 +11,7 @@ interface ResourceColumnProps {
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<Resource>) => void;
   isReadOnly?: boolean;
+  emptyMessage?: string;
 }
 
 export function ResourceColumn({
@@ -21,6 +23,7 @@ export function ResourceColumn({
   onDelete,
   onUpdate,
   isReadOnly = false,
+  emptyMessage,
 }: ResourceColumnProps) {
   const getColumnColor = () => {
     switch (columnStatus) {
@@ -45,7 +48,9 @@ export function ResourceColumn({
       <div className="space-y-3">
         {resources.length === 0 ? (
           <div className="text-center py-8">
-            <p className="text-gray-500 dark:text-gray-500 text-sm">No resources yet</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm">
+              {emptyMessage || getEmptyStateMessage({ hasResources: false, hasActiveFilters: false })}
+            </p>
           </div>
         ) : (
           resources.map((resource) => (

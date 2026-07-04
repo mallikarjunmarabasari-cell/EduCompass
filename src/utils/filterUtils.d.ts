@@ -7,3 +7,4 @@ export interface FilterState {
 
 export function hasActiveFilters(filters?: FilterState): boolean;
 export function clearFilters(): FilterState;
+export function getEmptyStateMessage(options: { hasResources: boolean; hasActiveFilters: boolean }): string;

@@ -8,7 +8,7 @@ import { ResourceColumn } from '../components/Board/ResourceColumn';
 import { AddResourceModal } from '../components/Board/AddResourceModal';
 import { ShareSettingsModal } from '../components/Board/ShareSettingsModal';
 import { SearchBar, FilterPanel } from '../components/Search';
-import { hasActiveFilters } from '../utils/filterUtils';
+import { getEmptyStateMessage, hasActiveFilters } from '../utils/filterUtils';
 
 export function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -261,6 +261,7 @@ export function BoardPage() {
   const todoResources = filteredResources.filter((r) => r.status === 'todo');
   const inProgressResources = filteredResources.filter((r) => r.status === 'in-progress');
   const completedResources = filteredResources.filter((r) => r.status === 'completed');
+  const hasActiveSearchFilters = searchMode || Object.keys(filters).length > 0;
 
   console.log('📊 Column breakdown:', {
     filtered: filteredResources.length,
@@ -353,6 +354,7 @@ export function BoardPage() {
             onProgressChange={handleProgressChange}
             onDelete={handleDeleteResource}
             onUpdate={handleUpdateResource}
+            emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveSearchFilters })}
           />
           <ResourceColumn
             title="In Progress"
@@ -362,6 +364,7 @@ export function BoardPage() {
             onProgressChange={handleProgressChange}
             onDelete={handleDeleteResource}
             onUpdate={handleUpdateResource}
+            emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveSearchFilters })}
           />
           <ResourceColumn
             title="Completed"
@@ -371,6 +374,7 @@ export function BoardPage() {
             onProgressChange={handleProgressChange}
             onDelete={handleDeleteResource}
             onUpdate={handleUpdateResource}
+            emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveSearchFilters })}
           />
         </div>
       ) : (
