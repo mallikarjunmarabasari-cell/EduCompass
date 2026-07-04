@@ -8,6 +8,7 @@ import { ResourceColumn } from '../components/Board/ResourceColumn';
 import { AddResourceModal } from '../components/Board/AddResourceModal';
 import { ShareSettingsModal } from '../components/Board/ShareSettingsModal';
 import { SearchBar, FilterPanel } from '../components/Search';
+import { hasActiveFilters } from '../utils/filterUtils';
 
 export function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -82,10 +83,19 @@ export function BoardPage() {
       const query = filters.query.toLowerCase();
       const beforeCount = result.length;
       result = result.filter((r) => {
-        const matches = 
-          r.title.toLowerCase().includes(query) ||
-          r.description?.toLowerCase().includes(query) ||
-          r.url?.toLowerCase().includes(query);
+        const searchableText = [
+          r.title,
+          r.description || '',
+          r.url || '',
+          ...(r.urls || []),
+          ...(Array.isArray(r.tags)
+            ? r.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name))
+            : []),
+        ]
+          .join(' ')
+          .toLowerCase();
+
+        const matches = searchableText.includes(query);
         if (matches) {
           console.log(`✅ Matched: ${r.title}`);
         }
@@ -207,6 +217,7 @@ export function BoardPage() {
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
+    setSearchMode(hasActiveFilters(newFilters));
   };
 
   const handleTagSelect = (tagName: string) => {
@@ -304,9 +315,12 @@ export function BoardPage() {
         {(searchMode || Object.keys(filters).length > 0) && resources.length > 0 && (
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Found {filteredResources.length} of {resources.length} resources
-            {Object.keys(filters).length > 0 && (
+            {hasActiveFilters(filters) && (
               <button
-                onClick={() => setFilters({ query: undefined })}
+                onClick={() => {
+                  setFilters({});
+                  setSearchMode(false);
+                }}
                 className="ml-4 text-blue-600 hover:text-blue-800 underline text-xs"
               >
                 Clear filters
@@ -365,7 +379,10 @@ export function BoardPage() {
             No resources match your search criteria
           </p>
           <button
-            onClick={() => setFilters({ query: undefined })}
+            onClick={() => {
+              setFilters({});
+              setSearchMode(false);
+            }}
             className="text-blue-600 hover:text-blue-800 underline"
           >
             Clear filters
