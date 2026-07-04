@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveResourceCategory, hasResourceFormChanges } from "./linkUtils.ts";
+import {
+  resolveResourceCategory,
+  hasResourceFormChanges,
+  inferCategoryFromFile,
+} from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
   assert.equal(
@@ -42,4 +46,9 @@ test("keeps form changes disabled when nothing meaningful changed", () => {
     }),
     false,
   );
+});
+
+test("infers a code category for common developer file formats", () => {
+  assert.equal(inferCategoryFromFile("component.jsx"), "Code");
+  assert.equal(inferCategoryFromFile("data.json"), "Code");
 });
