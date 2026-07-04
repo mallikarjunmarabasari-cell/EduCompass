@@ -140,7 +140,7 @@ export const analyticsService = {
 // AI Content
 export const aiService = {
   generateContent: (resourceId: string, url: string, contentType?: string) =>
-    API.post<{ summary: string; keyPoints: string[]; flashcards: any[] }>(
+    API.post<{ summary: string; keyPoints: string[]; flashcards: any[]; source?: 'gemini' | 'fallback' }>(
       `/resources/${resourceId}/generate-ai`,
       { url, contentType }
     ),

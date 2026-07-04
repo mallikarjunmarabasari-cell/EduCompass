@@ -1388,7 +1388,11 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
         console.error("Error extracting PDF text:", pdfError.message);
         content = `[PDF Document]\n\nNote: Could not extract text from PDF. Error: ${pdfError.message}`;
       }
-    } else if (/\.(txt|md|py|java|js|ts|jsx|tsx|cpp|c|cs|rb|go|rs|php|swift|json|yaml|yml|xml|html|css|sql)$/i.test(url)) {
+    } else if (
+      /\.(txt|md|py|java|js|ts|jsx|tsx|cpp|c|cs|rb|go|rs|php|swift|json|yaml|yml|xml|html|css|sql)$/i.test(
+        url,
+      )
+    ) {
       // Handle uploaded text/code files
       extractedType = "file_text";
       const filePath = url.startsWith("/")
@@ -1406,7 +1410,10 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
           throw new Error(`File not found at ${filePath}`);
         }
       } catch (fileError) {
-        console.error("Error reading uploaded text/code file:", fileError.message);
+        console.error(
+          "Error reading uploaded text/code file:",
+          fileError.message,
+        );
         content = `[Uploaded File Content]\n\nNote: Could not read the uploaded text/code file. Error: ${fileError.message}`;
       }
     } else {
@@ -1503,6 +1510,7 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
       summary: aiContent.summary,
       keyPoints: aiContent.keyPoints,
       flashcards: aiContent.flashcards,
+      source: aiContent.source || "gemini",
     });
   } catch (err) {
     console.error("❌ Error generating AI content:", err.message);

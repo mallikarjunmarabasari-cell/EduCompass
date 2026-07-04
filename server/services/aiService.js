@@ -170,8 +170,11 @@ function buildFallbackContent(content, contentType = "text") {
     .filter(Boolean);
 
   const summarySource = sentences.slice(0, 3).join(" ");
-  const summary = summarySource || `This ${contentType} was added to your study board.`;
-  const keyPoints = sentences.slice(0, 5).map((sentence) => sentence.replace(/^[•\-*]\s*/, ""));
+  const summary =
+    summarySource || `This ${contentType} was added to your study board.`;
+  const keyPoints = sentences
+    .slice(0, 5)
+    .map((sentence) => sentence.replace(/^[•\-*]\s*/, ""));
   const flashcards = sentences.slice(0, 5).map((sentence, index) => ({
     question: `What is the main point of item ${index + 1}?`,
     answer: sentence,
@@ -181,6 +184,7 @@ function buildFallbackContent(content, contentType = "text") {
     summary,
     keyPoints,
     flashcards,
+    source: "fallback",
   };
 }
 
@@ -218,6 +222,7 @@ async function generateAIContent(content, contentType = "text") {
       summary,
       keyPoints,
       flashcards,
+      source: "gemini",
     };
   } catch (error) {
     console.warn(

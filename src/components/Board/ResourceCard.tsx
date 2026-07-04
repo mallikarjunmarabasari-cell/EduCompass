@@ -36,6 +36,7 @@ export function ResourceCard({
   const [aiFlashcards, setAIFlashcards] = useState<any>(null);
   const [aiLoading, setAILoading] = useState(false);
   const [aiLoaded, setAILoaded] = useState(false);
+  const [aiGenerationSource, setAIGenerationSource] = useState<'gemini' | 'fallback' | null>(null);
 
   const handleProgressSave = () => {
     onProgressChange(resource.id, tempProgress);
@@ -63,6 +64,7 @@ export function ResourceCard({
           keyPoints: response.data.keyPoints || [],
         });
         setAIFlashcards(response.data.flashcards);
+        setAIGenerationSource(response.data.source || 'gemini');
         setAILoaded(true);
       }
     } catch (error) {
@@ -76,6 +78,7 @@ export function ResourceCard({
           keyPoints: summaryRes.data.key_points || [],
         });
         setAIFlashcards(flashcardsRes.data.flashcards);
+        setAIGenerationSource('fallback');
         setAILoaded(true);
       } catch (e) {
         console.error('Failed to fetch generated AI content:', e);
@@ -342,11 +345,18 @@ export function ResourceCard({
         )}
 
         {/* AI Content Panels */}
-        <AISummaryPanel
-          summary={aiSummary}
-          isLoading={aiLoading}
-          onGenerate={handleGenerateAI}
-        />
+        <div className="space-y-2">
+          {aiGenerationSource === 'fallback' && (
+            <p className="text-[11px] text-amber-600 dark:text-amber-400">
+              Using a local fallback summary because the AI service was unavailable.
+            </p>
+          )}
+          <AISummaryPanel
+            summary={aiSummary}
+            isLoading={aiLoading}
+            onGenerate={handleGenerateAI}
+          />
+        </div>
         <AIFlashcards
           flashcards={aiFlashcards}
           isLoading={aiLoading}
