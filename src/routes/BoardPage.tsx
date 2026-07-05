@@ -8,7 +8,7 @@ import { ResourceColumn } from '../components/Board/ResourceColumn';
 import { AddResourceModal } from '../components/Board/AddResourceModal';
 import { ShareSettingsModal } from '../components/Board/ShareSettingsModal';
 import { SearchBar, FilterPanel } from '../components/Search';
-import { getEmptyStateMessage, hasActiveFilters } from '../utils/filterUtils';
+import { applyResourceFilters, getEmptyStateMessage, hasActiveFilters } from '../utils/filterUtils';
 
 export function BoardPage() {
   const { boardId } = useParams<{ boardId: string }>();
@@ -74,69 +74,9 @@ export function BoardPage() {
   };
 
   const applyFilters = () => {
-    let result = resources;
-    console.log('🔍 Starting filter. Resources count:', resources.length);
+    const result = applyResourceFilters(resources, filters);
+    console.log('🔍 Applied filters. Resources count:', resources.length);
     console.log('🔍 Current filters:', filters);
-
-    // Apply text search
-    if (filters.query) {
-      const query = filters.query.toLowerCase();
-      const beforeCount = result.length;
-      result = result.filter((r) => {
-        const searchableText = [
-          r.title,
-          r.description || '',
-          r.url || '',
-          ...(r.urls || []),
-          ...(Array.isArray(r.tags)
-            ? r.tags.map((tag) => (typeof tag === 'string' ? tag : tag.name))
-            : []),
-        ]
-          .join(' ')
-          .toLowerCase();
-
-        const matches = searchableText.includes(query);
-        if (matches) {
-          console.log(`✅ Matched: ${r.title}`);
-        }
-        return matches;
-      });
-      console.log(`📝 Text search: ${beforeCount} → ${result.length}`);
-    }
-
-    // Apply category filter
-    if (filters.category) {
-      const beforeCount = result.length;
-      result = result.filter((r) => r.category === filters.category);
-      console.log(`📂 Category filter: ${beforeCount} → ${result.length}`);
-    }
-
-    // Apply status filter
-    if (filters.status) {
-      const beforeCount = result.length;
-      result = result.filter((r) => r.status === filters.status);
-      console.log(`✔️ Status filter: ${beforeCount} → ${result.length}`);
-    }
-
-    // Apply tag filters - check if resource has any of the selected tags
-    if (filters.tags && filters.tags.length > 0) {
-      const beforeCount = result.length;
-      result = result.filter((r) => {
-        if (!r.tags || r.tags.length === 0) return false;
-        
-        // Handle both Tag objects and string tags
-        const resourceTagNames = r.tags.map((t) => 
-          typeof t === 'string' ? t : t.name
-        );
-        
-        // Check if any of the filter tags match resource tags
-        return filters.tags!.some((filterTag) => 
-          resourceTagNames.includes(filterTag)
-        );
-      });
-      console.log(`🏷️ Tag filter: ${beforeCount} → ${result.length}`);
-    }
-
     console.log('✅ Final filtered resources:', result.length);
     setFilteredResources(result);
   };
