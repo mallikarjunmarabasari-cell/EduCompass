@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import { detectCategory, extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
+import { detectCategory, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 
 interface AddResourceModalProps {
@@ -59,8 +59,9 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
           formData.append('file', pdfFile);
           
           try {
-            console.log("📤 Uploading PDF file:", pdfFile.name);
-            const uploadResponse = await fetch('/api/upload/pdf', {
+            const uploadRoute = getUploadRoute(pdfFile.name);
+            console.log(`📤 Uploading file via ${uploadRoute}:`, pdfFile.name);
+            const uploadResponse = await fetch(uploadRoute, {
               method: 'POST',
               body: formData,
             });
@@ -68,8 +69,10 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
             if (uploadResponse.ok) {
               const uploadResult = await uploadResponse.json();
               console.log("✅ File uploaded, response:", uploadResult);
-              const { fileUrl } = uploadResult;
-              pdfUrls.push(fileUrl);
+              const fileUrl = extractUploadedFileUrl(uploadResult);
+              if (fileUrl) {
+                pdfUrls.push(fileUrl);
+              }
 
               const inferredCategory = inferCategoryFromFile(pdfFile.name);
               resourceCategory = resolveResourceCategory({
@@ -78,8 +81,8 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
               });
             }
           } catch (error) {
-            console.error('Error uploading PDF:', error);
-            pdfUrls.push(`pdf://${pdfFile.name}`);
+            console.error('Error uploading file:', error);
+            pdfUrls.push(`file://${pdfFile.name}`);
           }
         }
         if (pdfUrls.length > 0) {

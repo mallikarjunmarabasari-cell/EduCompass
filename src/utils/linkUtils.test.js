@@ -4,6 +4,8 @@ import {
   resolveResourceCategory,
   hasResourceFormChanges,
   inferCategoryFromFile,
+  getUploadRoute,
+  extractUploadedFileUrl,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -56,4 +58,26 @@ test("infers a code category for common developer file formats", () => {
 test("infers a code category for additional web and data file formats", () => {
   assert.equal(inferCategoryFromFile("styles.css"), "Code");
   assert.equal(inferCategoryFromFile("query.sql"), "Code");
+});
+
+test("uses the generic upload endpoint for non-PDF files", () => {
+  assert.equal(getUploadRoute("notes.txt"), "/api/upload/file");
+  assert.equal(getUploadRoute("solution.py"), "/api/upload/file");
+});
+
+test("keeps the legacy PDF endpoint for PDF uploads", () => {
+  assert.equal(getUploadRoute("notes.pdf"), "/api/upload/pdf");
+});
+
+test("extracts a file URL from either single-file or multi-file upload responses", () => {
+  assert.equal(
+    extractUploadedFileUrl({ fileUrl: "/uploads/pdfs/example.pdf" }),
+    "/uploads/pdfs/example.pdf",
+  );
+  assert.equal(
+    extractUploadedFileUrl({
+      files: [{ fileUrl: "/uploads/pdfs/archive.zip" }],
+    }),
+    "/uploads/pdfs/archive.zip",
+  );
 });

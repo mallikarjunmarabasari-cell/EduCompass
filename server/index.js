@@ -1651,6 +1651,41 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
   }
 });
 
+app.post("/api/upload/file", upload.array("file"), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
+    }
+
+    if (req.files.length === 1) {
+      const file = req.files[0];
+      const fileUrl = `/uploads/pdfs/${file.filename}`;
+      console.log("📄 File uploaded successfully:", fileUrl);
+
+      res.json({
+        success: true,
+        fileUrl,
+        filename: file.originalname,
+        size: file.size,
+      });
+    } else {
+      const uploadedFiles = req.files.map((file) => ({
+        fileUrl: `/uploads/pdfs/${file.filename}`,
+        filename: file.originalname,
+        size: file.size,
+      }));
+
+      res.json({
+        success: true,
+        files: uploadedFiles,
+      });
+    }
+  } catch (err) {
+    console.error("Error uploading file:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Process uploaded PDF and generate AI content
 app.post("/api/resources/:resourceId/process-pdf", async (req, res) => {
   try {

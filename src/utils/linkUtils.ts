@@ -52,6 +52,22 @@ export function hasResourceFormChanges({
   return hasChanges || hasMeaningfulChanges || hasFileChanges;
 }
 
+export function getUploadRoute(fileName: string): string {
+  return fileName.toLowerCase().endsWith('.pdf') ? '/api/upload/pdf' : '/api/upload/file';
+}
+
+export function extractUploadedFileUrl(response: { fileUrl?: string; files?: Array<{ fileUrl?: string }> | undefined }): string | null {
+  if (response.fileUrl) {
+    return response.fileUrl;
+  }
+
+  if (Array.isArray(response.files) && response.files[0]?.fileUrl) {
+    return response.files[0].fileUrl;
+  }
+
+  return null;
+}
+
 export function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { extractYouTubeId, getYouTubeThumbnail, getAllowedFileAccept, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
+import { extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
 
 interface EditResourceModalProps {
   resource: Resource;
@@ -91,14 +91,18 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
           formData.append('file', pdfFile);
           
           try {
-            const uploadResponse = await fetch('/api/upload/pdf', {
+            const uploadRoute = getUploadRoute(pdfFile.name);
+            const uploadResponse = await fetch(uploadRoute, {
               method: 'POST',
               body: formData,
             });
 
             if (uploadResponse.ok) {
-              const { fileUrl } = await uploadResponse.json();
-              pdfUrls.push(fileUrl);
+              const uploadResult = await uploadResponse.json();
+              const fileUrl = extractUploadedFileUrl(uploadResult);
+              if (fileUrl) {
+                pdfUrls.push(fileUrl);
+              }
 
               const inferredCategory = inferCategoryFromFile(pdfFile.name);
               resourceCategory = resolveResourceCategory({
@@ -107,8 +111,8 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
               });
             }
           } catch (error) {
-            console.error('Error uploading PDF:', error);
-            pdfUrls.push(`pdf://${pdfFile.name}`);
+            console.error('Error uploading file:', error);
+            pdfUrls.push(`file://${pdfFile.name}`);
           }
         }
         if (pdfUrls.length > 0) {
