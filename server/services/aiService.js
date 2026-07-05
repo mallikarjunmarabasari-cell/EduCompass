@@ -160,24 +160,27 @@ async function extractPDFText(pdfPath) {
 }
 
 function buildFallbackContent(content, contentType = "text") {
-  const cleanedContent = String(content || "")
-    .replace(/\s+/g, " ")
-    .trim();
+  const cleanedContent = String(content || "").trim();
 
-  const sentences = cleanedContent
-    .split(/(?<=[.!?])\s+/)
-    .map((sentence) => sentence.trim())
+  const segments = cleanedContent
+    .split(/\r?\n+/)
+    .flatMap((segment) =>
+      segment
+        .split(/(?<=[.!?])\s+/)
+        .map((part) => part.trim())
+        .filter(Boolean),
+    )
     .filter(Boolean);
 
-  const summarySource = sentences.slice(0, 3).join(" ");
+  const summarySource = segments.slice(0, 3).join(" ");
   const summary =
     summarySource || `This ${contentType} was added to your study board.`;
-  const keyPoints = sentences
+  const keyPoints = segments
     .slice(0, 5)
-    .map((sentence) => sentence.replace(/^[•\-*]\s*/, ""));
-  const flashcards = sentences.slice(0, 5).map((sentence, index) => ({
+    .map((segment) => segment.replace(/^[•\-*]\s*/, ""));
+  const flashcards = segments.slice(0, 5).map((segment, index) => ({
     question: `What is the main point of item ${index + 1}?`,
-    answer: sentence,
+    answer: segment,
   }));
 
   return {
