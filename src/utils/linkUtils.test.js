@@ -52,3 +52,8 @@ test("infers a code category for common developer file formats", () => {
   assert.equal(inferCategoryFromFile("component.jsx"), "Code");
   assert.equal(inferCategoryFromFile("data.json"), "Code");
 });
+
+test("infers a code category for additional web and data file formats", () => {
+  assert.equal(inferCategoryFromFile("styles.css"), "Code");
+  assert.equal(inferCategoryFromFile("query.sql"), "Code");
+});

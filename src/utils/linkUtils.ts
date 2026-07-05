@@ -2,7 +2,12 @@ import type { Resource } from '../types';
 
 export const SUPPORTED_FILE_TYPES = {
   pdf: { extensions: ['.pdf'], category: 'PDF' },
-  code: { extensions: ['.py', '.java', '.js', '.jsx', '.ts', '.tsx', '.cpp', '.c', '.cs', '.rb', '.go', '.rs', '.php', '.swift', '.json', '.yaml', '.yml'], category: 'Code' },
+  code: {
+    extensions: [
+      '.py', '.java', '.js', '.jsx', '.ts', '.tsx', '.cpp', '.c', '.cs', '.rb', '.go', '.rs', '.php', '.swift', '.json', '.yaml', '.yml', '.css', '.scss', '.sass', '.sql', '.sh', '.bash', '.ps1', '.env', '.toml', '.ini', '.cfg', '.xml', '.html', '.htm',
+    ],
+    category: 'Code',
+  },
   text: { extensions: ['.txt', '.md', '.doc', '.docx'], category: 'Text' },
   archive: { extensions: ['.zip', '.rar', '.7z', '.tar', '.gz'], category: 'Archive' },
 } as const;
