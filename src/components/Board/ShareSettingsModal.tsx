@@ -91,11 +91,16 @@ export function ShareSettingsModal({ boardId, onClose }: ShareSettingsModalProps
     }
   };
 
-  const handleCopyLink = () => {
-    if (shareLink) {
-      navigator.clipboard.writeText(shareLink);
+  const handleCopyLink = async () => {
+    if (!shareLink) return;
+
+    try {
+      await navigator.clipboard.writeText(shareLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy share link:', err);
+      setError('Unable to copy link automatically. Please copy it manually.');
     }
   };
 
@@ -147,7 +152,7 @@ export function ShareSettingsModal({ boardId, onClose }: ShareSettingsModalProps
               </button>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400">
-              Share this link with anyone who has the email you specify below
+              Copy this link to share the board directly, or invite someone by email below.
             </p>
           </div>
 
