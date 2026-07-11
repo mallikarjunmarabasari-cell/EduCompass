@@ -80,17 +80,20 @@ export function HomePage() {
               EduCompass is your personalized study companion. Organize resources, enforce learning through assignments,
               and track your mastery with advanced analytics.
             </p>
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-wrap gap-4 pt-4">
               <Link to="/boards" className="btn-primary">
-                Get Started
+                Create Your First Board
               </Link>
               <button 
                 onClick={() => setShowFeaturesModal(true)}
                 className="btn-secondary"
               >
-                Learn More
+                Explore Features
               </button>
             </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Start organizing your study plan in under a minute.
+            </p>
           </div>
           <div className="bg-gradient-to-br from-yellow-400/20 to-gray-900/20 rounded-xl h-80 flex items-center justify-center">
             <div className="text-center">
