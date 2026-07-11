@@ -50,7 +50,9 @@ export function applyResourceFilters(resources = [], filters = {}) {
       );
 
       return filters.tags.some((filterTag) =>
-        resourceTagNames.includes(filterTag),
+        resourceTagNames.some((resourceTagName) =>
+          resourceTagName.toLowerCase() === filterTag.toLowerCase(),
+        ),
       );
     });
   }

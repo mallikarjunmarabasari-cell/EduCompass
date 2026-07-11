@@ -85,3 +85,29 @@ test("matches text search across titles and tags", () => {
     ["1"],
   );
 });
+
+test("matches selected tags case-insensitively", () => {
+  const resources = [
+    {
+      id: "1",
+      title: "React Basics",
+      category: "Reading",
+      status: "todo",
+      tags: ["React", "frontend"],
+    },
+    {
+      id: "2",
+      title: "TypeScript Guide",
+      category: "Code",
+      status: "todo",
+      tags: ["typescript"],
+    },
+  ];
+
+  const filtered = applyResourceFilters(resources, { tags: ["react"] });
+
+  assert.deepEqual(
+    filtered.map((resource) => resource.id),
+    ["1"],
+  );
+});
