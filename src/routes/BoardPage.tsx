@@ -215,7 +215,7 @@ export function BoardPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
         <div className="flex-1">
           <button
             onClick={() => navigate('/boards')}
@@ -229,10 +229,10 @@ export function BoardPage() {
             <p className="text-gray-600 dark:text-gray-400 mt-2">{board.description}</p>
           )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 sm:justify-end">
           <button
             onClick={() => setShowShareModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition font-medium"
+            className="flex w-full items-center justify-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition font-medium sm:w-auto"
             title="Share this board"
           >
             <Share2 size={20} />
@@ -240,7 +240,7 @@ export function BoardPage() {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 btn-primary"
+            className="flex w-full items-center justify-center gap-2 btn-primary sm:w-auto"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Add Resource</span>

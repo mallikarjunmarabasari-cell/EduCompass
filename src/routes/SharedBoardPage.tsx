@@ -152,7 +152,7 @@ export function SharedBoardPage() {
           Back
         </button>
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{boardData.board.title}</h1>
             {isReadOnly && (
               <div className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 border border-blue-500 rounded-full">
