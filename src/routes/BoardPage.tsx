@@ -249,20 +249,22 @@ export function BoardPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <SearchBar onSearch={handleSearch} query={filters.query || ''} />
 
-        {/* Result count when filtering */}
         {(searchMode || Object.keys(filters).length > 0) && resources.length > 0 && (
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Found {filteredResources.length} of {resources.length} resources
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800/70 dark:text-gray-300">
+            <span>
+              Showing {filteredResources.length} of {resources.length} resources
+              {filters.query && <span className="ml-2 text-blue-600 dark:text-blue-400">for “{filters.query}”</span>}
+            </span>
             {hasActiveFilters(filters) && (
               <button
                 onClick={() => {
                   setFilters({});
                   setSearchMode(false);
                 }}
-                className="ml-4 text-blue-600 hover:text-blue-800 underline text-xs"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Clear filters
               </button>
