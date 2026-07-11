@@ -238,6 +238,7 @@ export function ResourceCard({
               onClick={() => setShowProgressEditor(!showProgressEditor)}
               className="text-yellow-400 hover:text-yellow-500 font-semibold disabled:opacity-50"
               disabled={isReadOnly}
+              aria-label={`Edit progress for ${resource.title}`}
             >
               {resource.progress}%
             </button>
@@ -299,6 +300,7 @@ export function ResourceCard({
               onClick={() => setShowStatusMenu(!showStatusMenu)}
               className="w-full flex items-center justify-between px-3 py-1 bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white rounded text-xs font-medium hover:bg-gray-300 dark:hover:bg-gray-700 transition disabled:opacity-50"
               disabled={isReadOnly}
+              aria-label={`Change status for ${resource.title}`}
             >
               <span className="capitalize">{resource.status}</span>
               <ChevronDown size={14} />
@@ -328,7 +330,8 @@ export function ResourceCard({
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition"
-            title="Open resource"
+            title={`Open ${resource.title}`}
+            aria-label={`Open ${resource.title}`}
           >
             <ExternalLink size={14} />
           </a>
