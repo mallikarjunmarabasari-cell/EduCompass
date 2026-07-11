@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
 import { boardService, resourceService } from '../services/api';
-import { calculateBoardCompletion } from '../utils/analyticsUtils';
+import { calculateBoardCompletion, calculateBoardMastery, getCompletionStats } from '../utils/analyticsUtils';
 import type { Board, Resource } from '../types';
 import { AddBoardModal } from '../components/Dashboard/AddBoardModal';
 import { EditBoardModal } from '../components/Dashboard/EditBoardModal';
@@ -136,6 +136,8 @@ export function DashboardPage() {
           {boards.map((board) => {
             const resources = resourceMap[board.id] || [];
             const completion = calculateBoardCompletion(resources);
+            const mastery = calculateBoardMastery(resources);
+            const stats = getCompletionStats(resources);
 
             return (
               <div key={board.id} className="card-elevated p-6 space-y-4 group">
@@ -173,6 +175,16 @@ export function DashboardPage() {
                       className="progress-fill"
                       style={{ width: `${completion}%` }}
                     ></div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                    <div className="rounded-lg bg-gray-50 dark:bg-gray-800/70 p-2">
+                      <div className="font-semibold text-gray-900 dark:text-white">{stats.completed}</div>
+                      <div>Finished</div>
+                    </div>
+                    <div className="rounded-lg bg-gray-50 dark:bg-gray-800/70 p-2">
+                      <div className="font-semibold text-gray-900 dark:text-white">{mastery}%</div>
+                      <div>Mastery</div>
+                    </div>
                   </div>
                 </div>
 

@@ -16,7 +16,7 @@ export function ProfilePage() {
     masteryScore: 0,
     assignmentCompletionRate: 0,
     averageProgress: 0,
-    categoryBreakdown: { Video: 0, Notes: 0, PDF: 0, Practice: 0, Reading: 0 },
+    categoryBreakdown: { Video: 0, Notes: 0, PDF: 0, Practice: 0, Reading: 0, Code: 0, Text: 0, Archive: 0 },
   });
   const [tempName, setTempName] = useState('');
   const [isEditing, setIsEditing] = useState(false);
@@ -51,7 +51,7 @@ export function ProfilePage() {
       let assignmentCompletedCount = 0;
       let totalScore = 0;
       let scoredResourceCount = 0;
-      const categoryBreakdown = { Video: 0, Notes: 0, PDF: 0, Practice: 0, Reading: 0 };
+      const categoryBreakdown = { Video: 0, Notes: 0, PDF: 0, Practice: 0, Reading: 0, Code: 0, Text: 0, Archive: 0 };
 
       for (const board of boardsRes.data) {
         const resRes = await resourceService.getByBoard(board.id);
