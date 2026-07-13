@@ -17,7 +17,7 @@ export interface Resource {
   url: string;
   urls?: string[];
   tags?: string[] | Tag[];
-  category: 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading';
+  category: 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading' | 'Code' | 'Text' | 'Archive';
   status: 'todo' | 'in-progress' | 'completed';
   progress: number;
   description?: string;
