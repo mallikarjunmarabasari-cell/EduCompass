@@ -6,6 +6,7 @@ import {
   inferCategoryFromFile,
   getUploadRoute,
   extractUploadedFileUrl,
+  buildThumbnailsByUrl,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -79,5 +80,24 @@ test("extracts a file URL from either single-file or multi-file upload responses
       files: [{ fileUrl: "/uploads/pdfs/archive.zip" }],
     }),
     "/uploads/pdfs/archive.zip",
+  );
+});
+
+test("builds thumbnail mappings for YouTube URLs while preserving existing entries", () => {
+  const thumbnails = buildThumbnailsByUrl(
+    [
+      "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "https://example.com/notes",
+    ],
+    { "https://example.com/existing": "https://example.com/existing-thumb.jpg" },
+  );
+
+  assert.equal(
+    thumbnails["https://www.youtube.com/watch?v=dQw4w9WgXcQ"],
+    "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+  );
+  assert.equal(
+    thumbnails["https://example.com/existing"],
+    "https://example.com/existing-thumb.jpg",
   );
 });

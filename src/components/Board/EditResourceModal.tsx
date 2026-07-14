@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
 import { tagService } from '../../services/api';
 
 interface EditResourceModalProps {
@@ -97,6 +97,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
       let primaryUrl = '';
       let resourceCategory = category;
       let thumbnailUrl: string | undefined;
+      let thumbnailsByUrl: Record<string, string> = resource.thumbnailsByUrl || {};
 
       // Handle multiple PDF file uploads
       const pdfUrls: string[] = [];
@@ -140,12 +141,18 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         const firstUrl = urls.find(url => url.trim());
         if (firstUrl) {
           primaryUrl = firstUrl;
-          // Extract YouTube thumbnail if it's a YouTube URL
           const videoId = extractYouTubeId(firstUrl);
           if (videoId) {
             thumbnailUrl = getYouTubeThumbnail(videoId);
           }
         }
+      }
+
+      const manualUrls = urls.filter(url => url.trim());
+      thumbnailsByUrl = buildThumbnailsByUrl(manualUrls, resource.thumbnailsByUrl || {});
+
+      if (primaryUrl) {
+        thumbnailUrl = thumbnailsByUrl[primaryUrl] || thumbnailUrl || resource.thumbnailUrl;
       }
 
       // Collect all URLs (PDFs first, then manual entries)
@@ -155,7 +162,6 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
       finalUrls.push(...pdfUrls);
       
       // Add all manual URLs
-      const manualUrls = urls.filter(url => url.trim());
       finalUrls.push(...manualUrls);
       
       // If still no URLs, use primaryUrl
@@ -186,6 +192,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         description,
         moduleTag,
         thumbnailUrl,
+        thumbnailsByUrl,
         tags: normalizedTags.map((tag) => tag.name),
       });
       onClose();

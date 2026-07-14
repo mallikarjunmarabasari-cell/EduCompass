@@ -127,6 +127,8 @@ function formatResource(resource) {
     progress: resource.progress || 0,
     description: resource.description,
     moduleTag: resource.module_tag,
+    thumbnailUrl: resource.thumbnail_url || undefined,
+    thumbnailsByUrl: resource.thumbnails_by_url || undefined,
     hasPracticeAssignment: !!resource.has_practice_assignment,
     assignmentCompleted: !!resource.assignment_completed,
     latestAssignmentScore:
@@ -435,32 +437,48 @@ app.post("/api/boards/:boardId/resources", async (req, res) => {
 
     console.log("📝 URLs array being saved:", urlsArray);
 
-    const { data, error } = await supabase
+    const baseInsertPayload = {
+      board_id: boardId,
+      title,
+      description,
+      url: req.body.url || (urlsArray.length > 0 ? urlsArray[0] : null),
+      urls: urlsArray,
+      category,
+      status: req.body.status || "todo",
+      progress: req.body.progress ?? 0,
+      module_tag: req.body.moduleTag || null,
+      has_practice_assignment:
+        req.body.hasPracticeAssignment !== undefined
+          ? req.body.hasPracticeAssignment
+          : true,
+      assignment_completed:
+        req.body.assignmentCompleted !== undefined
+          ? req.body.assignmentCompleted
+          : false,
+      latest_assignment_score:
+        req.body.latestAssignmentScore !== undefined
+          ? req.body.latestAssignmentScore
+          : null,
+    };
+
+    const insertPayload = {
+      ...baseInsertPayload,
+      thumbnail_url: req.body.thumbnailUrl || null,
+      thumbnails_by_url: req.body.thumbnailsByUrl || null,
+    };
+
+    let { data, error } = await supabase
       .from("resources")
-      .insert({
-        board_id: boardId,
-        title,
-        description,
-        url: req.body.url || (urlsArray.length > 0 ? urlsArray[0] : null),
-        urls: urlsArray,
-        category,
-        status: req.body.status || "todo",
-        progress: req.body.progress ?? 0,
-        module_tag: req.body.moduleTag || null,
-        has_practice_assignment:
-          req.body.hasPracticeAssignment !== undefined
-            ? req.body.hasPracticeAssignment
-            : true,
-        assignment_completed:
-          req.body.assignmentCompleted !== undefined
-            ? req.body.assignmentCompleted
-            : false,
-        latest_assignment_score:
-          req.body.latestAssignmentScore !== undefined
-            ? req.body.latestAssignmentScore
-            : null,
-      })
+      .insert(insertPayload)
       .select();
+
+    if (error && /column .* does not exist|column .*not exist|invalid input syntax/i.test(error.message)) {
+      console.warn("⚠️ Thumbnail columns not available in database schema, retrying without them", error.message);
+      ({ data, error } = await supabase
+        .from("resources")
+        .insert(baseInsertPayload)
+        .select());
+    }
 
     if (error) throw error;
     const resource = data[0];
@@ -554,7 +572,10 @@ app.patch("/api/resources/:id", async (req, res) => {
     if (req.body.moduleTag !== undefined)
       updateData.module_tag = req.body.moduleTag;
     if (req.body.category) updateData.category = req.body.category;
-    if (req.body.thumbnailUrl) updateData.thumbnail_url = req.body.thumbnailUrl;
+    if (req.body.thumbnailUrl !== undefined)
+      updateData.thumbnail_url = req.body.thumbnailUrl;
+    if (req.body.thumbnailsByUrl !== undefined)
+      updateData.thumbnails_by_url = req.body.thumbnailsByUrl;
     if (req.body.hasPracticeAssignment !== undefined)
       updateData.has_practice_assignment = req.body.hasPracticeAssignment;
     if (req.body.assignmentCompleted !== undefined)
@@ -562,11 +583,23 @@ app.patch("/api/resources/:id", async (req, res) => {
     if (req.body.latestAssignmentScore !== undefined)
       updateData.latest_assignment_score = req.body.latestAssignmentScore;
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("resources")
       .update(updateData)
       .eq("id", id)
       .select();
+
+    if (error && /column .* does not exist|column .*not exist|invalid input syntax/i.test(error.message)) {
+      console.warn("⚠️ Thumbnail columns not available in database schema, retrying without them", error.message);
+      const fallbackUpdateData = { ...updateData };
+      delete fallbackUpdateData.thumbnail_url;
+      delete fallbackUpdateData.thumbnails_by_url;
+      ({ data, error } = await supabase
+        .from("resources")
+        .update(fallbackUpdateData)
+        .eq("id", id)
+        .select());
+    }
 
     if (error) throw error;
     const updated = data[0];

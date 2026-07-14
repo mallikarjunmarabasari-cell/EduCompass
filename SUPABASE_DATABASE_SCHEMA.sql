@@ -155,6 +155,8 @@ NOT NULL,
   progress INTEGER DEFAULT 0 CHECK
 (progress >= 0 AND progress <= 100),
   module_tag TEXT,
+  thumbnail_url TEXT,
+  thumbnails_by_url JSONB DEFAULT '{}'::jsonb,
   has_practice_assignment BOOLEAN DEFAULT false,
   assignment_completed BOOLEAN DEFAULT false,
   latest_assignment_score INTEGER,

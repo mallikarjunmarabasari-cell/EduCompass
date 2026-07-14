@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import { detectCategory, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, detectCategory, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 
 interface AddResourceModalProps {
@@ -48,6 +48,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
     setLoading(true);
     try {
       let thumbnailUrl: string | undefined;
+      let thumbnailsByUrl: Record<string, string> = {};
       let primaryUrl = '';
       let resourceCategory = category;
 
@@ -106,6 +107,9 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
         }
       }
 
+      const manualUrls = urls.filter(url => url.trim());
+      thumbnailsByUrl = buildThumbnailsByUrl(manualUrls);
+
       // Collect all URLs (PDFs first, then manual entries)
       let finalUrls: string[] = [];
       
@@ -113,7 +117,6 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
       finalUrls.push(...pdfUrls);
       
       // Add all manual URLs
-      const manualUrls = urls.filter(url => url.trim());
       finalUrls.push(...manualUrls);
       
       // If still no URLs, use primaryUrl
@@ -132,6 +135,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
         description,
         moduleTag,
         thumbnailUrl,
+        thumbnailsByUrl,
         hasPracticeAssignment: true,
         assignmentCompleted: false,
         latestAssignmentScore: undefined,

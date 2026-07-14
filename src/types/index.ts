@@ -22,6 +22,7 @@ export interface Resource {
   progress: number;
   description?: string;
   thumbnailUrl?: string;
+  thumbnailsByUrl?: Record<string, string>;
   moduleTag?: string;
   hasPracticeAssignment: boolean;
   assignmentCompleted: boolean;

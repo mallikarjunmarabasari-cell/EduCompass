@@ -85,6 +85,24 @@ export function getYouTubeThumbnail(videoId: string): string {
   return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 }
 
+export function buildThumbnailsByUrl(
+  urls: string[] = [],
+  existingThumbnailsByUrl: Record<string, string> = {},
+): Record<string, string> {
+  const thumbnailsByUrl: Record<string, string> = { ...existingThumbnailsByUrl };
+
+  for (const url of urls) {
+    if (!url) continue;
+
+    const videoId = extractYouTubeId(url);
+    if (videoId) {
+      thumbnailsByUrl[url] = getYouTubeThumbnail(videoId);
+    }
+  }
+
+  return thumbnailsByUrl;
+}
+
 export function detectCategory(url: string): 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading' | 'Code' | 'Text' | 'Archive' {
   const lowercaseUrl = url.toLowerCase();
 

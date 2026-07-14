@@ -124,13 +124,19 @@ export function ResourceCard({
           <span className={`badge ${getCategoryColor(resource.category)}`}>
             {resource.category}
           </span>
-          {resource.thumbnailUrl && (
+          {selectedResourceUrl && resource.thumbnailsByUrl?.[selectedResourceUrl] ? (
+            <img
+              src={resource.thumbnailsByUrl[selectedResourceUrl]}
+              alt="thumbnail"
+              className="w-10 h-10 rounded object-cover"
+            />
+          ) : resource.thumbnailUrl ? (
             <img
               src={resource.thumbnailUrl}
               alt="thumbnail"
               className="w-10 h-10 rounded object-cover"
             />
-          )}
+          ) : null}
         </div>
 
         {/* Description */}
