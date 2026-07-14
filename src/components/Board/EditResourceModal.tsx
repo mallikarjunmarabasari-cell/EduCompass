@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
 import { extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
+import { tagService } from '../../services/api';
 
 interface EditResourceModalProps {
   resource: Resource;
@@ -18,13 +19,14 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   const [status, setStatus] = useState(resource.status);
   const [description, setDescription] = useState(resource.description || '');
   const [moduleTag, setModuleTag] = useState(resource.moduleTag || '');
+  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [tags, setTags] = useState<Tag[]>(
     resource.tags 
       ? (Array.isArray(resource.tags) 
           ? resource.tags.map((t, idx) => 
               typeof t === 'string' 
-                ? { id: idx, name: t }
-                : { id: t.id, name: t.name }
+                ? { id: Date.now() + idx, name: t.trim() }
+                : { id: t.id, name: t.name.trim() }
             ) 
           : [])
       : []
@@ -41,6 +43,19 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
     description !== (resource.description || '') ||
     moduleTag !== (resource.moduleTag || '') ||
     tags.map((tag) => tag.name).join(',') !== (resource.tags || []).map((tag) => (typeof tag === 'string' ? tag : tag.name)).join(',');
+
+  useEffect(() => {
+    const loadAvailableTags = async () => {
+      try {
+        const response = await tagService.getAll();
+        setAvailableTags(response.data || []);
+      } catch (error) {
+        console.error('Error loading tags:', error);
+      }
+    };
+
+    loadAvailableTags();
+  }, []);
 
   const handleChange = () => {
     setHasChanges(true);
@@ -153,6 +168,15 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         return;
       }
 
+      const normalizedTags = Array.from(
+        new Map(
+          tags
+            .map((tag) => ({ ...tag, name: tag.name.trim() }))
+            .filter((tag) => tag.name)
+            .map((tag) => [tag.name.toLowerCase(), tag])
+        ).values()
+      );
+
       await onUpdate({
         title,
         url: primaryUrl || finalUrls[0] || '',
@@ -162,7 +186,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         description,
         moduleTag,
         thumbnailUrl,
-        tags: tags.map(t => t.name), // Convert Tag[] back to string[]
+        tags: normalizedTags.map((tag) => tag.name),
       });
       onClose();
     } finally {
@@ -372,6 +396,8 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
                 setTags(newTags);
                 handleChange();
               }}
+              suggestions={availableTags}
+              placeholder="Add or select tags..."
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
               💡 Add tags to help with AI content generation and organization
