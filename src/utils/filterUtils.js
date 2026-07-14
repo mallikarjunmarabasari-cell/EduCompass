@@ -45,13 +45,15 @@ export function applyResourceFilters(resources = [], filters = {}) {
     result = result.filter((resource) => {
       if (!resource.tags || resource.tags.length === 0) return false;
 
-      const resourceTagNames = resource.tags.map((tag) =>
-        typeof tag === "string" ? tag : tag.name,
-      );
+      const resourceTagNames = resource.tags
+        .map((tag) => (typeof tag === "string" ? tag : tag?.name))
+        .filter(Boolean)
+        .map((tagName) => tagName.trim());
 
       return filters.tags.some((filterTag) =>
-        resourceTagNames.some((resourceTagName) =>
-          resourceTagName.toLowerCase() === filterTag.toLowerCase(),
+        resourceTagNames.some(
+          (resourceTagName) =>
+            resourceTagName.toLowerCase() === filterTag.toLowerCase(),
         ),
       );
     });

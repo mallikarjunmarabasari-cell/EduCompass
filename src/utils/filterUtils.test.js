@@ -111,3 +111,29 @@ test("matches selected tags case-insensitively", () => {
     ["1"],
   );
 });
+
+test("matches tag filters when resources use mixed tag shapes", () => {
+  const resources = [
+    {
+      id: "1",
+      title: "React Basics",
+      category: "Reading",
+      status: "todo",
+      tags: ["React", { name: "frontend" }],
+    },
+    {
+      id: "2",
+      title: "TypeScript Guide",
+      category: "Code",
+      status: "todo",
+      tags: [{ name: "typescript" }],
+    },
+  ];
+
+  const filtered = applyResourceFilters(resources, { tags: ["frontend"] });
+
+  assert.deepEqual(
+    filtered.map((resource) => resource.id),
+    ["1"],
+  );
+});
