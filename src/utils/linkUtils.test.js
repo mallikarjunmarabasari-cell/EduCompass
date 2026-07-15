@@ -8,6 +8,7 @@ import {
   extractUploadedFileUrl,
   buildThumbnailsByUrl,
   normalizeTagNames,
+  resolveResourceUrl,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -117,5 +118,40 @@ test("normalizes mixed tag formats into trimmed, unique names", () => {
       null,
     ]),
     ["Alpha", "beta", "Gamma"],
+  );
+});
+
+test("prefers the selected resource URL when present, otherwise falls back to the first available link", () => {
+  assert.equal(
+    resolveResourceUrl(
+      {
+        url: "https://example.com/primary",
+        urls: ["https://example.com/first", "https://example.com/second"],
+      },
+      "https://example.com/second",
+    ),
+    "https://example.com/second",
+  );
+
+  assert.equal(
+    resolveResourceUrl(
+      {
+        url: "https://example.com/fallback",
+        urls: ["https://example.com/first"],
+      },
+      "",
+    ),
+    "https://example.com/first",
+  );
+
+  assert.equal(
+    resolveResourceUrl(
+      {
+        url: "https://example.com/fallback",
+        urls: [],
+      },
+      "",
+    ),
+    "https://example.com/fallback",
   );
 });

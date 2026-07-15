@@ -124,6 +124,14 @@ export function normalizeTagNames(tags: Array<string | { id?: number; name?: str
   return Array.from(uniqueNames.values());
 }
 
+export function resolveResourceUrl(resource: Pick<Resource, 'url' | 'urls'>, selectedUrl = ''): string {
+  if (selectedUrl) return selectedUrl;
+  if (resource.urls && resource.urls.length > 0) {
+    return resource.urls.find((url) => !!url) || resource.url || '';
+  }
+  return resource.url || '';
+}
+
 export function detectCategory(url: string): 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading' | 'Code' | 'Text' | 'Archive' {
   const lowercaseUrl = url.toLowerCase();
 
