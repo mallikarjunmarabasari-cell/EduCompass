@@ -103,6 +103,27 @@ export function buildThumbnailsByUrl(
   return thumbnailsByUrl;
 }
 
+export function normalizeTagNames(tags: Array<string | { id?: number; name?: string } | null | undefined>): string[] {
+  const uniqueNames = new Map<string, string>();
+
+  for (const tag of tags || []) {
+    if (!tag) continue;
+
+    const rawName = typeof tag === 'string' ? tag : tag.name;
+    if (!rawName) continue;
+
+    const normalized = rawName.trim().replace(/^#/, '');
+    if (!normalized) continue;
+
+    const key = normalized.toLowerCase();
+    if (!uniqueNames.has(key)) {
+      uniqueNames.set(key, normalized);
+    }
+  }
+
+  return Array.from(uniqueNames.values());
+}
+
 export function detectCategory(url: string): 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading' | 'Code' | 'Text' | 'Archive' {
   const lowercaseUrl = url.toLowerCase();
 

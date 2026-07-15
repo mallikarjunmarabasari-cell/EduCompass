@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { buildThumbnailsByUrl, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, normalizeTagNames, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
 import { tagService } from '../../services/api';
 
 interface EditResourceModalProps {
@@ -174,14 +174,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         return;
       }
 
-      const normalizedTags = Array.from(
-        new Map(
-          tags
-            .map((tag) => ({ ...tag, name: tag.name.trim() }))
-            .filter((tag) => tag.name)
-            .map((tag) => [tag.name.toLowerCase(), tag])
-        ).values()
-      );
+      const normalizedTagNames = normalizeTagNames(tags.map((tag) => ({ id: tag.id, name: tag.name })));
 
       await onUpdate({
         title,
@@ -193,7 +186,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         moduleTag,
         thumbnailUrl,
         thumbnailsByUrl,
-        tags: normalizedTags.map((tag) => tag.name),
+        tags: normalizedTagNames,
       });
       onClose();
     } finally {

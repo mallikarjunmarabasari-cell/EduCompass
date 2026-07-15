@@ -7,6 +7,7 @@ import {
   getUploadRoute,
   extractUploadedFileUrl,
   buildThumbnailsByUrl,
+  normalizeTagNames,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -89,7 +90,9 @@ test("builds thumbnail mappings for YouTube URLs while preserving existing entri
       "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       "https://example.com/notes",
     ],
-    { "https://example.com/existing": "https://example.com/existing-thumb.jpg" },
+    {
+      "https://example.com/existing": "https://example.com/existing-thumb.jpg",
+    },
   );
 
   assert.equal(
@@ -99,5 +102,20 @@ test("builds thumbnail mappings for YouTube URLs while preserving existing entri
   assert.equal(
     thumbnails["https://example.com/existing"],
     "https://example.com/existing-thumb.jpg",
+  );
+});
+
+test("normalizes mixed tag formats into trimmed, unique names", () => {
+  assert.deepEqual(
+    normalizeTagNames([
+      "  Alpha  ",
+      "#beta",
+      "alpha",
+      { id: 7, name: "Gamma" },
+      { id: 8, name: " gamma " },
+      "",
+      null,
+    ]),
+    ["Alpha", "beta", "Gamma"],
   );
 });
