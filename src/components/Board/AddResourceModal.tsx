@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import { buildThumbnailsByUrl, detectCategory, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, resolveResourceCategory } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, detectCategory, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, inferCategoryFromFiles, resolveResourceCategory } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 
 interface AddResourceModalProps {
@@ -51,6 +51,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
       let thumbnailsByUrl: Record<string, string> = {};
       let primaryUrl = '';
       let resourceCategory = category;
+      const uploadedFileNames = pdfFiles.map((file) => file.name);
 
       // Handle multiple PDF file uploads
       const pdfUrls: string[] = [];
@@ -90,6 +91,14 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
           primaryUrl = pdfUrls[0];
           console.log("✅ Primary PDF URL set to:", primaryUrl);
         }
+      }
+
+      const fileBasedCategory = inferCategoryFromFiles(uploadedFileNames);
+      if (fileBasedCategory) {
+        resourceCategory = resolveResourceCategory({
+          selectedCategory: resourceCategory,
+          inferredCategory: fileBasedCategory,
+        });
       }
 
       // If no PDF or no primaryUrl from PDF, use first URL as primary

@@ -4,6 +4,7 @@ import {
   resolveResourceCategory,
   hasResourceFormChanges,
   inferCategoryFromFile,
+  inferCategoryFromFiles,
   getUploadRoute,
   extractUploadedFileUrl,
   buildThumbnailsByUrl,
@@ -61,6 +62,11 @@ test("infers a code category for common developer file formats", () => {
 test("infers a code category for additional web and data file formats", () => {
   assert.equal(inferCategoryFromFile("styles.css"), "Code");
   assert.equal(inferCategoryFromFile("query.sql"), "Code");
+});
+
+test("infers a category from the first supported file in a selected batch", () => {
+  assert.equal(inferCategoryFromFiles(["notes.pdf", "script.py"]), "PDF");
+  assert.equal(inferCategoryFromFiles(["script.py", "notes.txt"]), "Code");
 });
 
 test("uses the generic upload endpoint for non-PDF files", () => {

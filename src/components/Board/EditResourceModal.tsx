@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { buildThumbnailsByUrl, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, normalizeTagNames, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, inferCategoryFromFiles, normalizeTagNames, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
 import { tagService } from '../../services/api';
 
 interface EditResourceModalProps {
@@ -98,6 +98,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
       let resourceCategory = category;
       let thumbnailUrl: string | undefined;
       let thumbnailsByUrl: Record<string, string> = resource.thumbnailsByUrl || {};
+      const uploadedFileNames = pdfFiles.map((file) => file.name);
 
       // Handle multiple PDF file uploads
       const pdfUrls: string[] = [];
@@ -134,6 +135,14 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
         if (pdfUrls.length > 0) {
           primaryUrl = pdfUrls[0];
         }
+      }
+
+      const fileBasedCategory = inferCategoryFromFiles(uploadedFileNames);
+      if (fileBasedCategory) {
+        resourceCategory = resolveResourceCategory({
+          selectedCategory: resourceCategory,
+          inferredCategory: fileBasedCategory,
+        });
       }
 
       // If no PDF or no primaryUrl from PDF, use first URL as primary

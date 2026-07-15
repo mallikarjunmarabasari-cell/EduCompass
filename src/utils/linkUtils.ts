@@ -30,6 +30,17 @@ export function inferCategoryFromFile(fileName: string): 'PDF' | 'Code' | 'Text'
   return null;
 }
 
+export function inferCategoryFromFiles(fileNames: string[]): 'PDF' | 'Code' | 'Text' | 'Archive' | null {
+  for (const fileName of fileNames) {
+    const inferredCategory = inferCategoryFromFile(fileName);
+    if (inferredCategory) {
+      return inferredCategory;
+    }
+  }
+
+  return null;
+}
+
 export function resolveResourceCategory({
   selectedCategory,
   inferredCategory,
