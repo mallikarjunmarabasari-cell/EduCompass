@@ -74,6 +74,15 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
   const handleFileChange = (files: File[]) => {
     if (files.length > 0) {
       setPdfFiles((prev) => [...prev, ...files]);
+      const inferredCategory = inferCategoryFromFiles(files.map((file) => file.name));
+      if (inferredCategory) {
+        setCategory((prevCategory) =>
+          resolveResourceCategory({
+            selectedCategory: prevCategory,
+            inferredCategory,
+          }),
+        );
+      }
       setHasFileChanges(true);
       handleChange();
     }
