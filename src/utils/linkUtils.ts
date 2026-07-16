@@ -8,8 +8,13 @@ export const SUPPORTED_FILE_TYPES = {
     ],
     category: 'Code',
   },
-  text: { extensions: ['.txt', '.md', '.doc', '.docx'], category: 'Text' },
-  archive: { extensions: ['.zip', '.rar', '.7z', '.tar', '.gz'], category: 'Archive' },
+  text: {
+    extensions: [
+      '.txt', '.md', '.doc', '.docx', '.odt', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.epub', '.mobi',
+    ],
+    category: 'Text',
+  },
+  archive: { extensions: ['.zip', '.rar', '.7z', '.tar', '.gz', '.tgz'], category: 'Archive' },
 } as const;
 
 export function getAllowedFileAccept(): string {

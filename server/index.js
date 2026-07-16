@@ -63,6 +63,16 @@ const upload = multer({
       "text/markdown",
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "text/csv",
+      "application/epub+zip",
+      "application/x-mobipocket-ebook",
+      "application/vnd.oasis.opendocument.text",
+      "application/vnd.oasis.opendocument.spreadsheet",
+      "application/vnd.oasis.opendocument.presentation",
       // Archives
       "application/zip",
       "application/x-rar-compressed",
@@ -75,14 +85,14 @@ const upload = multer({
     if (
       supportedMimeTypes.includes(file.mimetype) ||
       file.originalname.match(
-        /\\.(py|java|js|ts|cpp|c|cs|rb|go|rs|php|swift|txt|md|doc|docx|zip|rar|7z|tar|gz)$/i,
+        /\\.(py|java|js|ts|cpp|c|cs|rb|go|rs|php|swift|txt|md|doc|docx|ppt|pptx|xls|xlsx|csv|odt|epub|mobi|zip|rar|7z|tar|gz)$/i,
       )
     ) {
       cb(null, true);
     } else {
       cb(
         new Error(
-          `File type not supported. Supported formats: PDF, Code files (.py, .java, .js, .ts, .cpp, .c, .cs, .rb, .go, .rs, .php, .swift), Text files (.txt, .md, .doc, .docx), Archives (.zip, .rar, .7z, .tar, .gz)`,
+          `File type not supported. Supported formats: PDF, Code files (.py, .java, .js, .ts, .cpp, .c, .cs, .rb, .go, .rs, .php, .swift), Text/Office files (.txt, .md, .doc, .docx, .odt, .ppt, .pptx, .xls, .xlsx, .csv, .epub, .mobi), Archives (.zip, .rar, .7z, .tar, .gz)`,
         ),
       );
     }

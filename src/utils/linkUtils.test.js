@@ -76,9 +76,25 @@ test("uses the generic upload endpoint for non-PDF files", () => {
 });
 
 test("detects file categories for URLs with query strings", () => {
-  assert.equal(detectCategory("https://example.com/script.py?version=1"), "Code");
-  assert.equal(detectCategory("https://example.com/archive.zip#download"), "Archive");
-  assert.equal(detectCategory("https://example.com/readme.md?view=true"), "Text");
+  assert.equal(
+    detectCategory("https://example.com/script.py?version=1"),
+    "Code",
+  );
+  assert.equal(
+    detectCategory("https://example.com/archive.zip#download"),
+    "Archive",
+  );
+  assert.equal(
+    detectCategory("https://example.com/readme.md?view=true"),
+    "Text",
+  );
+});
+
+test("infers text file categories for modern document formats", () => {
+  assert.equal(inferCategoryFromFile("presentation.pptx"), "Text");
+  assert.equal(inferCategoryFromFile("spreadsheet.xlsx"), "Text");
+  assert.equal(inferCategoryFromFile("notes.odt"), "Text");
+  assert.equal(inferCategoryFromFile("ebook.epub"), "Text");
 });
 
 test("keeps the legacy PDF endpoint for PDF uploads", () => {
