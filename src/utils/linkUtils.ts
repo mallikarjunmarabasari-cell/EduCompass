@@ -143,8 +143,17 @@ export function resolveResourceUrl(resource: Pick<Resource, 'url' | 'urls'>, sel
   return resource.url || '';
 }
 
+function getUrlPath(url: string): string {
+  try {
+    return new URL(url).pathname.toLowerCase();
+  } catch (_) {
+    return url.toLowerCase();
+  }
+}
+
 export function detectCategory(url: string): 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading' | 'Code' | 'Text' | 'Archive' {
   const lowercaseUrl = url.toLowerCase();
+  const path = getUrlPath(url);
 
   if (lowercaseUrl.includes('youtube.com') || lowercaseUrl.includes('youtu.be')) {
     return 'Video';
@@ -154,7 +163,7 @@ export function detectCategory(url: string): 'Video' | 'Notes' | 'PDF' | 'Practi
   }
 
   for (const type of Object.values(SUPPORTED_FILE_TYPES)) {
-    if (type.extensions.some((ext) => lowercaseUrl.endsWith(ext))) {
+    if (type.extensions.some((ext) => path.endsWith(ext))) {
       return type.category as 'Video' | 'Notes' | 'PDF' | 'Practice' | 'Reading' | 'Code' | 'Text' | 'Archive';
     }
   }

@@ -5,6 +5,7 @@ import {
   hasResourceFormChanges,
   inferCategoryFromFile,
   inferCategoryFromFiles,
+  detectCategory,
   getUploadRoute,
   extractUploadedFileUrl,
   buildThumbnailsByUrl,
@@ -72,6 +73,12 @@ test("infers a category from the first supported file in a selected batch", () =
 test("uses the generic upload endpoint for non-PDF files", () => {
   assert.equal(getUploadRoute("notes.txt"), "/api/upload/file");
   assert.equal(getUploadRoute("solution.py"), "/api/upload/file");
+});
+
+test("detects file categories for URLs with query strings", () => {
+  assert.equal(detectCategory("https://example.com/script.py?version=1"), "Code");
+  assert.equal(detectCategory("https://example.com/archive.zip#download"), "Archive");
+  assert.equal(detectCategory("https://example.com/readme.md?view=true"), "Text");
 });
 
 test("keeps the legacy PDF endpoint for PDF uploads", () => {
