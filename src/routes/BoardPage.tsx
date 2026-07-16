@@ -22,7 +22,6 @@ export function BoardPage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [allTags, setAllTags] = useState<Tag[]>([]);
   const [filters, setFilters] = useState<SearchFilters>({});
-  const [searchMode, setSearchMode] = useState(false);
 
   useEffect(() => {
     if (boardId && !authLoading && user) {
@@ -152,12 +151,10 @@ export function BoardPage() {
       ...prev,
       query: query || undefined,
     }));
-    setSearchMode(!!query);
   };
 
   const handleFiltersChange = (newFilters: SearchFilters) => {
     setFilters(newFilters);
-    setSearchMode(hasActiveFilters(newFilters));
   };
 
   const handleTagSelect = (tagName: string) => {
@@ -201,7 +198,7 @@ export function BoardPage() {
   const todoResources = filteredResources.filter((r) => r.status === 'todo');
   const inProgressResources = filteredResources.filter((r) => r.status === 'in-progress');
   const completedResources = filteredResources.filter((r) => r.status === 'completed');
-  const hasActiveSearchFilters = searchMode || Object.keys(filters).length > 0;
+  const hasActiveSearchFilters = hasActiveFilters(filters);
 
   console.log('📊 Column breakdown:', {
     filtered: filteredResources.length,
@@ -252,7 +249,7 @@ export function BoardPage() {
       <div className="space-y-3">
         <SearchBar onSearch={handleSearch} query={filters.query || ''} />
 
-        {(searchMode || Object.keys(filters).length > 0) && resources.length > 0 && (
+        {hasActiveSearchFilters && resources.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800/70 dark:text-gray-300">
             <span>
               Showing {filteredResources.length} of {resources.length} resources
@@ -262,7 +259,6 @@ export function BoardPage() {
               <button
                 onClick={() => {
                   setFilters({});
-                  setSearchMode(false);
                 }}
                 className="text-xs font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               >
@@ -274,7 +270,7 @@ export function BoardPage() {
       </div>
 
       {/* Filters - Optional side panel */}
-      {(searchMode || Object.keys(filters).length > 0) && resources.length > 0 && (
+      {hasActiveSearchFilters && resources.length > 0 && (
         <div className="mb-4">
           <FilterPanel
             filters={filters}
@@ -327,7 +323,6 @@ export function BoardPage() {
           <button
             onClick={() => {
               setFilters({});
-              setSearchMode(false);
             }}
             className="text-blue-600 hover:text-blue-800 underline"
           >
