@@ -16,16 +16,20 @@ import {
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = "./uploads/pdfs";
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+// Create uploads directories if they don't exist
+const pdfUploadsDir = "./uploads/pdfs";
+const fileUploadsDir = "./uploads/files";
+for (const dir of [pdfUploadsDir, fileUploadsDir]) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
 }
 
-// Configure multer for PDF uploads
+// Configure multer for uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    const isPdfUpload = req.originalUrl.includes("/api/upload/pdf");
+    cb(null, isPdfUpload ? pdfUploadsDir : fileUploadsDir);
   },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
@@ -472,8 +476,16 @@ app.post("/api/boards/:boardId/resources", async (req, res) => {
       .insert(insertPayload)
       .select();
 
-    if (error && /column .* does not exist|column .*not exist|invalid input syntax/i.test(error.message)) {
-      console.warn("⚠️ Thumbnail columns not available in database schema, retrying without them", error.message);
+    if (
+      error &&
+      /column .* does not exist|column .*not exist|invalid input syntax/i.test(
+        error.message,
+      )
+    ) {
+      console.warn(
+        "⚠️ Thumbnail columns not available in database schema, retrying without them",
+        error.message,
+      );
       ({ data, error } = await supabase
         .from("resources")
         .insert(baseInsertPayload)
@@ -589,8 +601,16 @@ app.patch("/api/resources/:id", async (req, res) => {
       .eq("id", id)
       .select();
 
-    if (error && /column .* does not exist|column .*not exist|invalid input syntax/i.test(error.message)) {
-      console.warn("⚠️ Thumbnail columns not available in database schema, retrying without them", error.message);
+    if (
+      error &&
+      /column .* does not exist|column .*not exist|invalid input syntax/i.test(
+        error.message,
+      )
+    ) {
+      console.warn(
+        "⚠️ Thumbnail columns not available in database schema, retrying without them",
+        error.message,
+      );
       const fallbackUpdateData = { ...updateData };
       delete fallbackUpdateData.thumbnail_url;
       delete fallbackUpdateData.thumbnails_by_url;
@@ -1692,7 +1712,7 @@ app.post("/api/upload/file", upload.array("file"), async (req, res) => {
 
     if (req.files.length === 1) {
       const file = req.files[0];
-      const fileUrl = `/uploads/pdfs/${file.filename}`;
+      const fileUrl = `/uploads/files/${file.filename}`;
       console.log("📄 File uploaded successfully:", fileUrl);
 
       res.json({
@@ -1703,7 +1723,7 @@ app.post("/api/upload/file", upload.array("file"), async (req, res) => {
       });
     } else {
       const uploadedFiles = req.files.map((file) => ({
-        fileUrl: `/uploads/pdfs/${file.filename}`,
+        fileUrl: `/uploads/files/${file.filename}`,
         filename: file.originalname,
         size: file.size,
       }));
