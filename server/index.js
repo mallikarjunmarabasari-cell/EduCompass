@@ -771,7 +771,7 @@ app.get("/api/assignments/:resourceId", async (req, res) => {
     res.json(createdAssignment);
   } catch (err) {
     console.error("Error fetching assignment:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -837,7 +837,7 @@ app.post("/api/assignments/:resourceId/submit", async (req, res) => {
     res.json({ scorePercent, result: result[0] });
   } catch (err) {
     console.error("Error submitting assignment:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
