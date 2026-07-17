@@ -1100,7 +1100,7 @@ app.get("/api/tags", async (req, res) => {
     res.json(data || []);
   } catch (err) {
     console.error("Error fetching tags:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1119,7 +1119,7 @@ app.get("/api/resources/:resourceId/tags", async (req, res) => {
     res.json(tags);
   } catch (err) {
     console.error("Error fetching resource tags:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1158,7 +1158,7 @@ app.post("/api/resources/:resourceId/tags", async (req, res) => {
     res.json(updatedTags);
   } catch (err) {
     console.error("Error adding tags to resource:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1177,7 +1177,7 @@ app.delete("/api/resources/:resourceId/tags/:tagId", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Error removing tag from resource:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
