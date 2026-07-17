@@ -1,10 +1,11 @@
 export function hasActiveFilters(filters = {}) {
-  return Boolean(
-    filters.query ||
-    filters.category ||
-    filters.status ||
-    (filters.tags && filters.tags.length > 0),
-  );
+  if (!filters) return false;
+  const query = typeof filters.query === 'string' ? filters.query.trim() : '';
+  const hasQuery = query.length > 0;
+  const hasCategory = !!(filters.category && String(filters.category).trim());
+  const hasStatus = !!filters.status;
+  const hasTags = Array.isArray(filters.tags) && filters.tags.length > 0;
+  return hasQuery || hasCategory || hasStatus || hasTags;
 }
 
 export function applyResourceFilters(resources = [], filters = {}) {
@@ -63,7 +64,13 @@ export function applyResourceFilters(resources = [], filters = {}) {
 }
 
 export function clearFilters() {
-  return {};
+  // Return an explicit empty filter shape so UI controls are reset predictably
+  return {
+    query: '',
+    tags: [],
+    category: undefined,
+    status: undefined,
+  };
 }
 
 export function getEmptyStateMessage({ hasResources, hasActiveFilters }) {
