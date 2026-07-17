@@ -335,7 +335,29 @@ async function callGeminiAPI(prompt) {
       }
     }
 
-    throw new Error(`Failed to call Gemini API: ${error.message}`);
+    // Map common failures to short error codes so callers can respond appropriately
+    let code = 'AI_CALL_FAILED';
+    if (error.response) {
+      const status = error.response.status;
+      if (status === 401) {
+        code = 'AUTH_ERROR';
+      } else if (status === 429) {
+        code = 'RATE_LIMIT';
+      } else if (status === 400) {
+        code = 'BAD_REQUEST';
+      } else {
+        code = `API_${status}`;
+      }
+    } else if (error.code) {
+      if (error.code === 'ECONNREFUSED') code = 'NETWORK_ERROR';
+      else if (error.code === 'ENOTFOUND') code = 'DNS_ERROR';
+      else if (error.code === 'ETIMEDOUT') code = 'TIMEOUT';
+    }
+
+    const errToThrow = new Error(`Failed to call Gemini API: ${error.message}`);
+    // Attach a machine-friendly code to the Error object
+    errToThrow.code = code;
+    throw errToThrow;
   }
 }
 
