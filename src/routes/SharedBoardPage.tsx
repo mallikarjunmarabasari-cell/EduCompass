@@ -5,7 +5,7 @@ import { shareService } from '../services/shareService';
 import { resourceService } from '../services/api';
 import type { Board, Resource } from '../types';
 import { ResourceColumn } from '../components/Board/ResourceColumn';
-import { getEmptyStateMessage } from '../utils/filterUtils';
+import { getEmptyStateMessage, hasActiveFilters } from '../utils/filterUtils';
 
 interface SharedBoardData {
   board: Board;
@@ -226,7 +226,7 @@ export function SharedBoardPage() {
             }
           }}
           isReadOnly={isReadOnly}
-          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: Boolean(searchTerm) })}
+          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveFilters({ query: searchTerm }) })}
         />
         <ResourceColumn
           title="In Progress"
