@@ -54,6 +54,12 @@ export function FilterPanel({
 
   const handleClearFilters = () => {
     onFiltersChange(clearFilters() as SearchFilters);
+    // Reset expanded sections to default when clearing filters
+    setExpandedSections({
+      category: true,
+      status: true,
+      tags: true,
+    });
   };
 
   const activeFiltersPresent = hasActiveFilters(filters);
