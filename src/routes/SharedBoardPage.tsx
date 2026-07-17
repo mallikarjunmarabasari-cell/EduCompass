@@ -138,6 +138,8 @@ export function SharedBoardPage() {
   const inProgressResources = filteredResources.filter((r) => r.status === 'in-progress');
   const completedResources = filteredResources.filter((r) => r.status === 'completed');
 
+  const hasActiveSearchFilters = hasActiveFilters({ query: searchTerm });
+
   const isReadOnly = boardData.share.permissionLevel === 'read';
 
   return (
@@ -226,7 +228,7 @@ export function SharedBoardPage() {
             }
           }}
           isReadOnly={isReadOnly}
-          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveFilters({ query: searchTerm }) })}
+          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveSearchFilters })}
         />
         <ResourceColumn
           title="In Progress"
@@ -245,7 +247,7 @@ export function SharedBoardPage() {
             }
           }}
           isReadOnly={isReadOnly}
-          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: Boolean(searchTerm) })}
+          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveSearchFilters })}
         />
         <ResourceColumn
           title="Completed"
@@ -264,7 +266,7 @@ export function SharedBoardPage() {
             }
           }}
           isReadOnly={isReadOnly}
-          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: Boolean(searchTerm) })}
+          emptyMessage={getEmptyStateMessage({ hasResources: resources.length > 0, hasActiveFilters: hasActiveSearchFilters })}
         />
       </div>
     </div>
