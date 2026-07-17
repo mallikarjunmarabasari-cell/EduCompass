@@ -677,7 +677,7 @@ app.get("/api/search", async (req, res) => {
     res.json((data || []).map(formatResource));
   } catch (err) {
     console.error("Error searching resources:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -692,7 +692,7 @@ app.delete("/api/resources/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Error deleting resource:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
