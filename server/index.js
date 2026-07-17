@@ -1578,11 +1578,28 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
   } catch (err) {
     console.error("❌ Error generating AI content:", err.message);
     console.error("Stack trace:", err.stack);
-    console.error("Full error:", JSON.stringify(err, null, 2));
-    res.status(500).json({
-      error: err.message,
-      details: process.env.NODE_ENV === "development" ? err.stack : undefined,
-    });
+    // Prepare a safe, structured error response for clients
+    const safePayload = {
+      error: err.message || 'AI generation failed',
+      code: err.code || 'AI_GENERATION_ERROR',
+      hint:
+        "Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.",
+    };
+
+    // Include stack only in development for debugging
+    if (process.env.NODE_ENV === 'development') safePayload.details = err.stack;
+
+    // Map certain error codes to HTTP status codes
+    const statusMap = {
+      AUTH_ERROR: 401,
+      RATE_LIMIT: 429,
+      BAD_REQUEST: 400,
+      NETWORK_ERROR: 502,
+      TIMEOUT: 504,
+    };
+
+    const status = statusMap[err.code] || 500;
+    res.status(status).json(safePayload);
   }
 });
 
