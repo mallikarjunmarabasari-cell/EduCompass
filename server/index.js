@@ -1084,7 +1084,7 @@ app.get("/api/boards/share/:shareToken", async (req, res) => {
     res.json({ success: true, board, share });
   } catch (err) {
     console.error("Error accessing shared board:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1226,7 +1226,7 @@ app.get("/api/analytics/summary", async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching analytics:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1261,7 +1261,7 @@ app.get("/api/analytics/distribution", async (req, res) => {
     res.json(distribution);
   } catch (err) {
     console.error("Error fetching distribution:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1291,7 +1291,7 @@ app.get("/api/analytics/completion", async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching completion:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1382,7 +1382,7 @@ app.get("/api/analytics/overview", async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching analytics overview:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
