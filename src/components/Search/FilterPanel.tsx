@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import type { Resource, SearchFilters } from '../../types';
+import { hasActiveFilters, clearFilters } from '../../utils/filterUtils';
 
 const CATEGORIES: Resource['category'][] = ['Video', 'Notes', 'PDF', 'Practice', 'Reading', 'Code', 'Text', 'Archive'];
 const STATUSES = [
@@ -52,18 +53,16 @@ export function FilterPanel({
   };
 
   const handleClearFilters = () => {
-    onFiltersChange({
-      query: filters.query,
-    });
+    onFiltersChange(clearFilters());
   };
 
-  const hasActiveFilters = filters.category || filters.status || (filters.tags && filters.tags.length > 0);
+  const activeFiltersPresent = hasActiveFilters(filters);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-semibold text-gray-800">Filters</h3>
-        {hasActiveFilters && (
+        {activeFiltersPresent && (
           <button
             onClick={handleClearFilters}
             className="text-sm text-blue-600 hover:text-blue-800 underline"
