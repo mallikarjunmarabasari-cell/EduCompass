@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Trash2, ExternalLink, ChevronDown } from 'lucide-react';
+import { Trash2, ExternalLink, ChevronDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import { getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 import { AssignmentBadge } from './AssignmentBadge';
@@ -37,6 +37,7 @@ export function ResourceCard({
   const [aiLoading, setAILoading] = useState(false);
   const [aiLoaded, setAILoaded] = useState(false);
   const [aiGenerationSource, setAIGenerationSource] = useState<'gemini' | 'fallback' | null>(null);
+  const [aiError, setAIError] = useState<{ code?: string; hint?: string; message?: string } | null>(null);
 
   const handleProgressSave = () => {
     onProgressChange(resource.id, tempProgress);
@@ -53,6 +54,7 @@ export function ResourceCard({
     }
 
     try {
+      setAIError(null);
       setAILoading(true);
       console.log(`🤖 Generating AI content for ${resource.title}`);
 
@@ -66,9 +68,17 @@ export function ResourceCard({
         setAIFlashcards(response.data.flashcards);
         setAIGenerationSource(response.data.source || 'gemini');
         setAILoaded(true);
+        setAIError(null);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating AI content:', error);
+
+      // If server returned a structured error payload, capture it for the UI
+      const resp = error?.response?.data;
+      if (resp && (resp.code || resp.hint || resp.error)) {
+        setAIError({ code: resp.code, hint: resp.hint, message: resp.error });
+      }
+
       // Try to fetch if already generated
       try {
         const summaryRes = await aiService.getSummary(resource.id);
@@ -82,11 +92,18 @@ export function ResourceCard({
         setAILoaded(true);
       } catch (e) {
         console.error('Failed to fetch generated AI content:', e);
-        alert('AI generation failed. Please check the resource link or try again later.');
+        if (!aiError) {
+          alert('AI generation failed. Please check the resource link or try again later.');
+        }
       }
     } finally {
       setAILoading(false);
     }
+  };
+
+  const handleRetryAI = async () => {
+    setAIError(null);
+    await handleGenerateAI();
   };
 
   useEffect(() => {
@@ -359,6 +376,30 @@ export function ResourceCard({
             <p className="text-[11px] text-amber-600 dark:text-amber-400">
               Using a local fallback summary because the AI service was unavailable.
             </p>
+          )}
+
+          {aiError && (
+            <div className="p-2 rounded bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-800 dark:text-red-200 flex items-start justify-between">
+              <div>
+                <div className="font-semibold flex items-center gap-2">
+                  <AlertTriangle size={14} />
+                  <span>AI Error: {aiError.code || 'UNKNOWN'}</span>
+                </div>
+                <div className="mt-1 text-[12px]">
+                  {aiError.hint || aiError.message || 'An error occurred generating AI content.'}
+                </div>
+              </div>
+              <div className="flex-shrink-0 flex items-center gap-2">
+                <button
+                  onClick={handleRetryAI}
+                  className="flex items-center gap-2 px-2 py-1 bg-yellow-400 text-black rounded text-xs font-semibold"
+                  title="Retry AI generation"
+                >
+                  <RefreshCw size={14} />
+                  Retry
+                </button>
+              </div>
+            </div>
           )}
           <AISummaryPanel
             summary={aiSummary}
