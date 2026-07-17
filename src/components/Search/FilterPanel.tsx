@@ -53,7 +53,7 @@ export function FilterPanel({
   };
 
   const handleClearFilters = () => {
-    onFiltersChange(clearFilters());
+    onFiltersChange(clearFilters() as SearchFilters);
   };
 
   const activeFiltersPresent = hasActiveFilters(filters);
