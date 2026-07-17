@@ -362,7 +362,7 @@ app.patch("/api/boards/:id", async (req, res) => {
     res.json(data[0]);
   } catch (err) {
     console.error("Error updating board:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -389,7 +389,7 @@ app.delete("/api/boards/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Error deleting board:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -423,7 +423,7 @@ app.get("/api/boards/:boardId/resources", async (req, res) => {
     res.json(formatted);
   } catch (err) {
     console.error("Error fetching resources:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
