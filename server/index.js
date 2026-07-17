@@ -575,7 +575,7 @@ app.post("/api/boards/:boardId/resources", async (req, res) => {
     res.json(formatResource(resource));
   } catch (err) {
     console.error("Error creating resource:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -646,7 +646,7 @@ app.patch("/api/resources/:id", async (req, res) => {
     res.json(formatResource(updated));
   } catch (err) {
     console.error("Error updating resource:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1579,27 +1579,11 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
   } catch (err) {
     console.error("❌ Error generating AI content:", err.message);
     console.error("Stack trace:", err.stack);
-    // Prepare a safe, structured error response for clients
-    const safePayload = {
-      error: err.message || "AI generation failed",
-      code: err.code || "AI_GENERATION_ERROR",
-      hint: "Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.",
-    };
-
-    // Include stack only in development for debugging
-    if (process.env.NODE_ENV === "development") safePayload.details = err.stack;
-
-    // Map certain error codes to HTTP status codes
-    const statusMap = {
-      AUTH_ERROR: 401,
-      RATE_LIMIT: 429,
-      BAD_REQUEST: 400,
-      NETWORK_ERROR: 502,
-      TIMEOUT: 504,
-    };
-
-    const status = statusMap[err.code] || 500;
-    res.status(status).json(safePayload);
+    return sendError(res, err, err.code === 'RATE_LIMIT' ? 429 : 500, {
+      code: err.code || 'AI_GENERATION_ERROR',
+      hint: 'Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.',
+      details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    });
   }
 });
 
@@ -1637,7 +1621,7 @@ app.get("/api/resources/:resourceId/summary", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error fetching summary:", err.message);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1661,7 +1645,7 @@ app.get("/api/resources/:resourceId/flashcards", async (req, res) => {
     });
   } catch (err) {
     console.error("Error fetching flashcards:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1685,7 +1669,7 @@ app.get("/api/resources/:resourceId/extracted-content", async (req, res) => {
     res.json(content);
   } catch (err) {
     console.error("Error fetching extracted content:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1727,7 +1711,7 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
     }
   } catch (err) {
     console.error("Error uploading PDF:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1762,7 +1746,7 @@ app.post("/api/upload/file", upload.array("file"), async (req, res) => {
     }
   } catch (err) {
     console.error("Error uploading file:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1867,7 +1851,7 @@ app.post("/api/resources/:resourceId/process-pdf", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error processing PDF:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
