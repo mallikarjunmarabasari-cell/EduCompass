@@ -890,7 +890,7 @@ app.get("/api/boards/:boardId/shares", async (req, res) => {
     res.json(data || []);
   } catch (err) {
     console.error("❌ Error in /shares endpoint:", err.message);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -989,7 +989,7 @@ app.post("/api/boards/:boardId/share", async (req, res) => {
     res.json({ success: true, share: share[0], emailSent: true });
   } catch (err) {
     console.error("❌ Error in /share endpoint:", err.message);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1020,7 +1020,7 @@ app.put("/api/boards/:boardId/share/:shareId", async (req, res) => {
     res.json({ success: true, share: data[0] });
   } catch (err) {
     console.error("Error updating share:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1049,7 +1049,7 @@ app.delete("/api/boards/:boardId/share/:shareId", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Error deleting share:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
