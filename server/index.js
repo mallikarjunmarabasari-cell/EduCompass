@@ -12,6 +12,7 @@ import {
   extractPDFText,
   youtubeService,
 } from "./services/aiService.js";
+import sendError from "./utils/errorResponder.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -246,7 +247,7 @@ app.get("/api/boards", async (req, res) => {
     res.json(data || []);
   } catch (err) {
     console.error("Error fetching boards:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -271,7 +272,7 @@ app.get("/api/boards/:id", async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("Error fetching board:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -330,7 +331,7 @@ app.post("/api/boards", async (req, res) => {
     res.json(data[0]);
   } catch (err) {
     console.error("❌ Error creating board:", err);
-    res.status(500).json({ error: err.message });
+    return sendError(res, err, 500);
   }
 });
 
@@ -1580,14 +1581,13 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
     console.error("Stack trace:", err.stack);
     // Prepare a safe, structured error response for clients
     const safePayload = {
-      error: err.message || 'AI generation failed',
-      code: err.code || 'AI_GENERATION_ERROR',
-      hint:
-        "Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.",
+      error: err.message || "AI generation failed",
+      code: err.code || "AI_GENERATION_ERROR",
+      hint: "Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.",
     };
 
     // Include stack only in development for debugging
-    if (process.env.NODE_ENV === 'development') safePayload.details = err.stack;
+    if (process.env.NODE_ENV === "development") safePayload.details = err.stack;
 
     // Map certain error codes to HTTP status codes
     const statusMap = {
