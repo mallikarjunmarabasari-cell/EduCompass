@@ -39,7 +39,7 @@ export function AISummaryPanel({
 
   if (!summaryText && !isLoading && onGenerate) {
     return (
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3 space-y-2">
         <button
           onClick={onGenerate}
           disabled={isLoading}
@@ -48,6 +48,9 @@ export function AISummaryPanel({
           <Sparkles size={14} />
           Generate AI Summary
         </button>
+        <p className="text-[11px] leading-5 text-gray-500 dark:text-gray-400">
+          Generate a summary and key points from this resource when you are ready.
+        </p>
       </div>
     );
   }
