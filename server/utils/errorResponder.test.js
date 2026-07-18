@@ -22,3 +22,10 @@ test("preserves hints when formatting validation errors", () => {
   assert.equal(payload.hint, "Try a PDF or text file instead.");
   assert.equal(payload.code, "VALIDATION_ERROR");
 });
+
+test("keeps default messages when no explicit error payload is provided", () => {
+  const payload = formatErrorPayload({ statusCode: 500 });
+
+  assert.equal(payload.error, "An unexpected error occurred");
+  assert.equal(payload.code, "INTERNAL_ERROR");
+});
