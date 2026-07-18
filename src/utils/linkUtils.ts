@@ -88,6 +88,17 @@ export function extractUploadedFileUrl(response: { fileUrl?: string; url?: strin
   return null;
 }
 
+export function extractUploadErrorMessage(payload: { error?: string; message?: string; hint?: string; code?: string } | null | undefined): string {
+  if (!payload) return 'Upload failed. Please try again.';
+
+  const message = payload.error || payload.message || 'Upload failed. Please try again.';
+  if (!payload.hint) return message;
+
+  const normalizedHint = payload.hint.trim();
+  const separator = message.endsWith('.') || message.endsWith('!') || message.endsWith('?') ? ' ' : '. ';
+  return `${message}${separator}${normalizedHint}`;
+}
+
 export function extractYouTubeId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
-import { buildThumbnailsByUrl, detectCategory, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, inferCategoryFromFiles, resolveResourceCategory } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, detectCategory, extractUploadErrorMessage, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, inferCategoryFromFiles, resolveResourceCategory } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 
 interface AddResourceModalProps {
@@ -19,6 +19,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
   const handleUrlChange = (index: number, newUrl: string) => {
     const updatedUrls = [...urls];
@@ -46,6 +47,7 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
     if (!hasUrls && pdfFiles.length === 0) return;
 
     setLoading(true);
+    setUploadError('');
     try {
       let thumbnailUrl: string | undefined;
       let thumbnailsByUrl: Record<string, string> = {};
@@ -81,9 +83,13 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
                 selectedCategory: resourceCategory,
                 inferredCategory,
               });
+            } else {
+              const uploadErrorPayload = await uploadResponse.json().catch(() => null);
+              setUploadError(extractUploadErrorMessage(uploadErrorPayload));
             }
           } catch (error) {
             console.error('Error uploading file:', error);
+            setUploadError('Upload failed. Please try again.');
             pdfUrls.push(`file://${pdfFile.name}`);
           }
         }
@@ -243,6 +249,11 @@ export function AddResourceModal({ onClose, onAdd }: AddResourceModalProps) {
             {/* File Upload Section */}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Files (Optional, Multiple - PDF, Code, Text, Archives)</label>
+              {uploadError ? (
+                <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+                  {uploadError}
+                </div>
+              ) : null}
               {pdfFiles.length > 0 ? (
                 <div className="space-y-2 mb-2">
                   {pdfFiles.map((file, index) => (

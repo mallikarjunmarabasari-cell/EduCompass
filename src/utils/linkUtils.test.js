@@ -8,6 +8,7 @@ import {
   detectCategory,
   getUploadRoute,
   extractUploadedFileUrl,
+  extractUploadErrorMessage,
   buildThumbnailsByUrl,
   normalizeTagNames,
   resolveResourceUrl,
@@ -99,6 +100,17 @@ test("infers text file categories for modern document formats", () => {
 
 test("keeps the legacy PDF endpoint for PDF uploads", () => {
   assert.equal(getUploadRoute("notes.pdf"), "/api/upload/pdf");
+});
+
+test("formats upload failures into a readable message", () => {
+  assert.equal(
+    extractUploadErrorMessage({ error: "No files uploaded", code: "VALIDATION_ERROR" }),
+    "No files uploaded",
+  );
+  assert.equal(
+    extractUploadErrorMessage({ error: "File type not supported", hint: "Try a PDF or text file instead." }),
+    "File type not supported. Try a PDF or text file instead.",
+  );
 });
 
 test("extracts a file URL from either single-file or multi-file upload responses", () => {
