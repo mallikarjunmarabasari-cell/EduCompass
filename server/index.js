@@ -1791,7 +1791,16 @@ app.post("/api/resources/:resourceId/process-pdf", async (req, res) => {
     const { pdfPath } = req.body;
 
     if (!pdfPath) {
-      return res.status(400).json({ error: "PDF path is required" });
+      return sendError(
+        res,
+        {
+          message: "PDF path is required",
+          statusCode: 400,
+          code: "VALIDATION_ERROR",
+          hint: "Upload a PDF first or provide a valid uploaded file path.",
+        },
+        400,
+      );
     }
 
     console.log(`🤖 Processing PDF for resource ${resourceId}: ${pdfPath}`);
@@ -1805,9 +1814,16 @@ app.post("/api/resources/:resourceId/process-pdf", async (req, res) => {
         "Warning: Could not extract PDF text:",
         extractError.message,
       );
-      return res.status(400).json({
-        error: "Failed to extract text from PDF. Ensure the PDF is valid.",
-      });
+      return sendError(
+        res,
+        {
+          message: "Failed to extract text from PDF. Ensure the PDF is valid.",
+          statusCode: 400,
+          code: "VALIDATION_ERROR",
+          hint: "Try uploading a different PDF or confirm the file is not corrupted.",
+        },
+        400,
+      );
     }
 
     // Store extracted content
