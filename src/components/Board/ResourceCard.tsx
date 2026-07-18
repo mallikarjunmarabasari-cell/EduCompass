@@ -373,9 +373,9 @@ export function ResourceCard({
         {/* AI Content Panels */}
         <div className="space-y-2">
           {aiGenerationSource === 'fallback' && (
-            <p className="text-[11px] text-amber-600 dark:text-amber-400">
-              Using a local fallback summary because the AI service was unavailable.
-            </p>
+            <div className="rounded border border-amber-200 bg-amber-50 px-2.5 py-2 text-[11px] leading-5 text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+              A local fallback summary is being shown because the AI service was unavailable. You can retry when the service is back.
+            </div>
           )}
 
           {aiError && (
