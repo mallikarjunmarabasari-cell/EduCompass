@@ -379,20 +379,20 @@ export function ResourceCard({
           )}
 
           {aiError && (
-            <div className="p-2 rounded bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 text-xs text-red-800 dark:text-red-200 flex items-start justify-between">
-              <div>
-                <div className="font-semibold flex items-center gap-2">
-                  <AlertTriangle size={14} />
-                  <span>AI Error: {aiError.code || 'UNKNOWN'}</span>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800 shadow-sm dark:border-red-700 dark:bg-red-900/30 dark:text-red-200">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-2 font-semibold">
+                    <AlertTriangle size={14} />
+                    <span>AI Error: {aiError.code || 'UNKNOWN'}</span>
+                  </div>
+                  <div className="mt-1 text-[12px] leading-5">
+                    {aiError.hint || aiError.message || 'An error occurred generating AI content.'}
+                  </div>
                 </div>
-                <div className="mt-1 text-[12px]">
-                  {aiError.hint || aiError.message || 'An error occurred generating AI content.'}
-                </div>
-              </div>
-              <div className="flex-shrink-0 flex items-center gap-2">
                 <button
                   onClick={handleRetryAI}
-                  className="flex items-center gap-2 px-2 py-1 bg-yellow-400 text-black rounded text-xs font-semibold"
+                  className="flex shrink-0 items-center gap-2 rounded bg-yellow-400 px-2 py-1 text-[11px] font-semibold text-black"
                   title="Retry AI generation"
                 >
                   <RefreshCw size={14} />
