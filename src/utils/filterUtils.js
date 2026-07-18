@@ -1,6 +1,6 @@
 export function hasActiveFilters(filters = {}) {
   if (!filters) return false;
-  const query = typeof filters.query === 'string' ? filters.query.trim() : '';
+  const query = typeof filters.query === "string" ? filters.query.trim() : "";
   const hasQuery = query.length > 0;
   const hasCategory = !!(filters.category && String(filters.category).trim());
   const hasStatus = !!filters.status;
@@ -66,7 +66,7 @@ export function applyResourceFilters(resources = [], filters = {}) {
 export function clearFilters() {
   // Return an explicit empty filter shape so UI controls are reset predictably
   return {
-    query: '',
+    query: "",
     tags: [],
     category: undefined,
     status: undefined,

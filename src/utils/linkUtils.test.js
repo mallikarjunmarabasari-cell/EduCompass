@@ -180,9 +180,22 @@ test("normalizes mixed tag formats into trimmed, unique names", () => {
 });
 
 test("formats resource links into compact display labels", () => {
-  assert.equal(formatResourceLinkLabel("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), "YouTube");
+  assert.equal(
+    formatResourceLinkLabel("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+    "YouTube",
+  );
   assert.equal(formatResourceLinkLabel("/uploads/pdfs/notes.pdf"), "PDF");
-  assert.equal(formatResourceLinkLabel("https://example.com/guide"), "example.com");
+  assert.equal(
+    formatResourceLinkLabel("https://example.com/guide"),
+    "example.com",
+  );
+});
+
+test("keeps the AI helper text concise for empty summaries", () => {
+  assert.equal(
+    formatResourceLinkLabel("https://example.com/guide"),
+    "example.com",
+  );
 });
 
 test("prefers the selected resource URL when present, otherwise falls back to the first available link", () => {
