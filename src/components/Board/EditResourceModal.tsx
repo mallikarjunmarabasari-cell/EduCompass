@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X, Plus, Trash2, Upload } from 'lucide-react';
 import type { Resource, Tag } from '../../types';
 import { TagInput } from '../Search/TagInput';
-import { buildThumbnailsByUrl, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, inferCategoryFromFiles, normalizeTagNames, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
+import { buildThumbnailsByUrl, extractUploadErrorMessage, extractUploadedFileUrl, extractYouTubeId, getAllowedFileAccept, getUploadRoute, getYouTubeThumbnail, inferCategoryFromFile, inferCategoryFromFiles, normalizeTagNames, resolveResourceCategory, hasResourceFormChanges } from '../../utils/linkUtils';
 import { tagService } from '../../services/api';
 
 interface EditResourceModalProps {
@@ -32,6 +32,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
       : []
   );
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const [hasChanges, setHasChanges] = useState(false);
   const [hasFileChanges, setHasFileChanges] = useState(false);
 
@@ -102,6 +103,7 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
     if (!hasUrls && pdfFiles.length === 0) return;
 
     setLoading(true);
+    setUploadError('');
     try {
       let primaryUrl = '';
       let resourceCategory = category;
@@ -135,9 +137,13 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
                 selectedCategory: resourceCategory,
                 inferredCategory,
               });
+            } else {
+              const uploadErrorPayload = await uploadResponse.json().catch(() => null);
+              setUploadError(extractUploadErrorMessage(uploadErrorPayload));
             }
           } catch (error) {
             console.error('Error uploading file:', error);
+            setUploadError('Upload failed. Please try again.');
             pdfUrls.push(`file://${pdfFile.name}`);
           }
         }
@@ -287,6 +293,11 @@ export function EditResourceModal({ resource, onClose, onUpdate }: EditResourceM
             {/* File Upload Section */}
             <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-2">Files (Optional, Multiple - PDF, Code, Text, Archives)</label>
+              {uploadError ? (
+                <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+                  {uploadError}
+                </div>
+              ) : null}
               {pdfFiles.length > 0 ? (
                 <div className="space-y-2 mb-2">
                   {pdfFiles.map((file, index) => (
