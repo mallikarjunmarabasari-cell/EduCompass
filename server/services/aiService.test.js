@@ -31,15 +31,24 @@ test("generateAIContent uses fallback when GEMINI_API_KEY is missing", async () 
   const originalKey = process.env.GEMINI_API_KEY;
   delete process.env.GEMINI_API_KEY;
 
-  const sample = "This is a simple sample content used to trigger fallback generation.";
+  const sample =
+    "This is a simple sample content used to trigger fallback generation.";
 
   try {
     const res = await generateAIContent(sample, "article_text");
     assert.equal(res.source, "fallback");
-    assert.ok(res.summary && typeof res.summary === 'string');
+    assert.ok(res.summary && typeof res.summary === "string");
     assert.ok(Array.isArray(res.flashcards));
   } finally {
     // Restore original environment
     if (originalKey !== undefined) process.env.GEMINI_API_KEY = originalKey;
   }
+});
+
+test("buildFallbackContent gives a clearer summary for empty input", () => {
+  const fallback = buildFallbackContent("   ", "article_text");
+
+  assert.match(fallback.summary, /no usable content/i);
+  assert.deepEqual(fallback.keyPoints, []);
+  assert.deepEqual(fallback.flashcards, []);
 });

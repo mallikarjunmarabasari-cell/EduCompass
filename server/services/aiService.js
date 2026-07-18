@@ -172,16 +172,20 @@ function buildFallbackContent(content, contentType = "text") {
     )
     .filter(Boolean);
 
+  const hasUsableContent = segments.length > 0;
   const summarySource = segments.slice(0, 3).join(" ");
-  const summary =
-    summarySource || `This ${contentType} was added to your study board.`;
-  const keyPoints = segments
-    .slice(0, 5)
-    .map((segment) => segment.replace(/^[•\-*]\s*/, ""));
-  const flashcards = segments.slice(0, 5).map((segment, index) => ({
-    question: `What is the main point of item ${index + 1}?`,
-    answer: segment,
-  }));
+  const summary = hasUsableContent
+    ? summarySource
+    : "No usable content was provided, so this entry was added as a placeholder.";
+  const keyPoints = hasUsableContent
+    ? segments.slice(0, 5).map((segment) => segment.replace(/^[•\-*]\s*/, ""))
+    : [];
+  const flashcards = hasUsableContent
+    ? segments.slice(0, 5).map((segment, index) => ({
+        question: `What is the main point of item ${index + 1}?`,
+        answer: segment,
+      }))
+    : [];
 
   return {
     summary,
@@ -336,22 +340,22 @@ async function callGeminiAPI(prompt) {
     }
 
     // Map common failures to short error codes so callers can respond appropriately
-    let code = 'AI_CALL_FAILED';
+    let code = "AI_CALL_FAILED";
     if (error.response) {
       const status = error.response.status;
       if (status === 401) {
-        code = 'AUTH_ERROR';
+        code = "AUTH_ERROR";
       } else if (status === 429) {
-        code = 'RATE_LIMIT';
+        code = "RATE_LIMIT";
       } else if (status === 400) {
-        code = 'BAD_REQUEST';
+        code = "BAD_REQUEST";
       } else {
         code = `API_${status}`;
       }
     } else if (error.code) {
-      if (error.code === 'ECONNREFUSED') code = 'NETWORK_ERROR';
-      else if (error.code === 'ENOTFOUND') code = 'DNS_ERROR';
-      else if (error.code === 'ETIMEDOUT') code = 'TIMEOUT';
+      if (error.code === "ECONNREFUSED") code = "NETWORK_ERROR";
+      else if (error.code === "ENOTFOUND") code = "DNS_ERROR";
+      else if (error.code === "ETIMEDOUT") code = "TIMEOUT";
     }
 
     const errToThrow = new Error(`Failed to call Gemini API: ${error.message}`);
