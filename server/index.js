@@ -1680,7 +1680,7 @@ app.get("/api/resources/:resourceId/extracted-content", async (req, res) => {
 app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "No files uploaded" });
+      return sendError(res, { message: "No files uploaded", statusCode: 400, code: "VALIDATION_ERROR" }, 400);
     }
 
     // Handle single file case (for backward compatibility)
@@ -1691,32 +1691,22 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
 
       res.json({
         success: true,
-        fileUrl,
-        path: fileUrl,
-        filePath: fileUrl,
+        fileUrl: fileUrl,
         filename: file.originalname,
         size: file.size,
       });
     } else {
       // Handle multiple files
-      const uploadedFiles = req.files.map((file) => {
-        const fileUrl = `/uploads/pdfs/${file.filename}`;
-        return {
-          fileUrl,
-          path: fileUrl,
-          filePath: fileUrl,
-          filename: file.originalname,
-          size: file.size,
-        };
-      });
+      const uploadedFiles = req.files.map((file) => ({
+        fileUrl: `/uploads/pdfs/${file.filename}`,
+        filename: file.originalname,
+        size: file.size,
+      }));
       console.log(`📄 ${req.files.length} PDFs uploaded successfully`);
 
       res.json({
         success: true,
         files: uploadedFiles,
-        fileUrl: uploadedFiles[0]?.fileUrl || null,
-        path: uploadedFiles[0]?.path || null,
-        filePath: uploadedFiles[0]?.filePath || null,
       });
     }
   } catch (err) {
@@ -1728,7 +1718,7 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
 app.post("/api/upload/file", upload.array("file"), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
-      return res.status(400).json({ error: "No files uploaded" });
+      return sendError(res, { message: "No files uploaded", statusCode: 400, code: "VALIDATION_ERROR" }, 400);
     }
 
     if (req.files.length === 1) {
@@ -1739,29 +1729,19 @@ app.post("/api/upload/file", upload.array("file"), async (req, res) => {
       res.json({
         success: true,
         fileUrl,
-        path: fileUrl,
-        filePath: fileUrl,
         filename: file.originalname,
         size: file.size,
       });
     } else {
-      const uploadedFiles = req.files.map((file) => {
-        const fileUrl = `/uploads/files/${file.filename}`;
-        return {
-          fileUrl,
-          path: fileUrl,
-          filePath: fileUrl,
-          filename: file.originalname,
-          size: file.size,
-        };
-      });
+      const uploadedFiles = req.files.map((file) => ({
+        fileUrl: `/uploads/files/${file.filename}`,
+        filename: file.originalname,
+        size: file.size,
+      }));
 
       res.json({
         success: true,
         files: uploadedFiles,
-        fileUrl: uploadedFiles[0]?.fileUrl || null,
-        path: uploadedFiles[0]?.path || null,
-        filePath: uploadedFiles[0]?.filePath || null,
       });
     }
   } catch (err) {
