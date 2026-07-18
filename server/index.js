@@ -1411,7 +1411,16 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
     }
 
     if (!url) {
-      return res.status(400).json({ error: "URL is required" });
+      return sendError(
+        res,
+        {
+          message: "URL is required",
+          statusCode: 400,
+          code: "VALIDATION_ERROR",
+          hint: "Provide a valid URL or select a resource with an existing link.",
+        },
+        400,
+      );
     }
 
     console.log(
@@ -1426,7 +1435,16 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
       extractedType = "youtube_transcript";
       const videoId = youtubeService.extractVideoId(url);
       if (!videoId) {
-        return res.status(400).json({ error: "Invalid YouTube URL" });
+        return sendError(
+          res,
+          {
+            message: "Invalid YouTube URL",
+            statusCode: 400,
+            code: "VALIDATION_ERROR",
+            hint: "Use a YouTube watch link or short link that contains a video ID.",
+          },
+          400,
+        );
       }
 
       try {
@@ -1680,7 +1698,15 @@ app.get("/api/resources/:resourceId/extracted-content", async (req, res) => {
 app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
-      return sendError(res, { message: "No files uploaded", statusCode: 400, code: "VALIDATION_ERROR" }, 400);
+      return sendError(
+        res,
+        {
+          message: "No files uploaded",
+          statusCode: 400,
+          code: "VALIDATION_ERROR",
+        },
+        400,
+      );
     }
 
     // Handle single file case (for backward compatibility)
@@ -1718,7 +1744,15 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
 app.post("/api/upload/file", upload.array("file"), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
-      return sendError(res, { message: "No files uploaded", statusCode: 400, code: "VALIDATION_ERROR" }, 400);
+      return sendError(
+        res,
+        {
+          message: "No files uploaded",
+          statusCode: 400,
+          code: "VALIDATION_ERROR",
+        },
+        400,
+      );
     }
 
     if (req.files.length === 1) {
