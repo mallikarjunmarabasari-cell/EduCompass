@@ -112,6 +112,14 @@ test("extracts a file URL from either single-file or multi-file upload responses
     }),
     "/uploads/pdfs/archive.zip",
   );
+  assert.equal(
+    extractUploadedFileUrl({ path: "/uploads/files/notes.txt" }),
+    "/uploads/files/notes.txt",
+  );
+  assert.equal(
+    extractUploadedFileUrl({ filePath: "/uploads/files/solution.py" }),
+    "/uploads/files/solution.py",
+  );
 });
 
 test("builds thumbnail mappings for YouTube URLs while preserving existing entries", () => {

@@ -1579,10 +1579,10 @@ app.post("/api/resources/:resourceId/generate-ai", async (req, res) => {
   } catch (err) {
     console.error("❌ Error generating AI content:", err.message);
     console.error("Stack trace:", err.stack);
-    return sendError(res, err, err.code === 'RATE_LIMIT' ? 429 : 500, {
-      code: err.code || 'AI_GENERATION_ERROR',
-      hint: 'Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.',
-      details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+    return sendError(res, err, err.code === "RATE_LIMIT" ? 429 : 500, {
+      code: err.code || "AI_GENERATION_ERROR",
+      hint: "Check GEMINI_API_KEY, content length, and upstream service availability. See server logs for details.",
+      details: process.env.NODE_ENV === "development" ? err.stack : undefined,
     });
   }
 });
@@ -1691,22 +1691,32 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
 
       res.json({
         success: true,
-        fileUrl: fileUrl,
+        fileUrl,
+        path: fileUrl,
+        filePath: fileUrl,
         filename: file.originalname,
         size: file.size,
       });
     } else {
       // Handle multiple files
-      const uploadedFiles = req.files.map((file) => ({
-        fileUrl: `/uploads/pdfs/${file.filename}`,
-        filename: file.originalname,
-        size: file.size,
-      }));
+      const uploadedFiles = req.files.map((file) => {
+        const fileUrl = `/uploads/pdfs/${file.filename}`;
+        return {
+          fileUrl,
+          path: fileUrl,
+          filePath: fileUrl,
+          filename: file.originalname,
+          size: file.size,
+        };
+      });
       console.log(`📄 ${req.files.length} PDFs uploaded successfully`);
 
       res.json({
         success: true,
         files: uploadedFiles,
+        fileUrl: uploadedFiles[0]?.fileUrl || null,
+        path: uploadedFiles[0]?.path || null,
+        filePath: uploadedFiles[0]?.filePath || null,
       });
     }
   } catch (err) {
@@ -1729,19 +1739,29 @@ app.post("/api/upload/file", upload.array("file"), async (req, res) => {
       res.json({
         success: true,
         fileUrl,
+        path: fileUrl,
+        filePath: fileUrl,
         filename: file.originalname,
         size: file.size,
       });
     } else {
-      const uploadedFiles = req.files.map((file) => ({
-        fileUrl: `/uploads/files/${file.filename}`,
-        filename: file.originalname,
-        size: file.size,
-      }));
+      const uploadedFiles = req.files.map((file) => {
+        const fileUrl = `/uploads/files/${file.filename}`;
+        return {
+          fileUrl,
+          path: fileUrl,
+          filePath: fileUrl,
+          filename: file.originalname,
+          size: file.size,
+        };
+      });
 
       res.json({
         success: true,
         files: uploadedFiles,
+        fileUrl: uploadedFiles[0]?.fileUrl || null,
+        path: uploadedFiles[0]?.path || null,
+        filePath: uploadedFiles[0]?.filePath || null,
       });
     }
   } catch (err) {
