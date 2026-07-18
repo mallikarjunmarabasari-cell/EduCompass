@@ -49,7 +49,7 @@ export function AISummaryPanel({
           Generate AI Summary
         </button>
         <p className="text-[11px] leading-5 text-gray-500 dark:text-gray-400">
-          Generate a summary and key points from this resource when you are ready.
+          Add some content or upload a file to generate a quick summary and key points.
         </p>
       </div>
     );
