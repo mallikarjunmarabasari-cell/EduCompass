@@ -1620,31 +1620,16 @@ app.get("/api/resources/:resourceId/summary", async (req, res) => {
     if (error) {
       console.warn("⚠️ Summary query error:", error.message);
       if (error.code === "PGRST116") {
-        return sendError(
-          res,
-          {
-            message: "Summary not found",
-            statusCode: 404,
-            code: "NOT_FOUND",
-            hint: "Generate a summary for this resource first.",
-          },
-          404,
-        );
+        // No rows found
+        return res
+          .status(404)
+          .json({ error: "Summary not found", code: "NOT_FOUND" });
       }
       throw error;
     }
 
     if (!summary) {
-      return sendError(
-        res,
-        {
-          message: "Summary not found",
-          statusCode: 404,
-          code: "NOT_FOUND",
-          hint: "Generate a summary for this resource first.",
-        },
-        404,
-      );
+      return res.status(404).json({ error: "Summary not found" });
     }
 
     console.log("✅ Summary retrieved successfully");
@@ -1669,33 +1654,8 @@ app.get("/api/resources/:resourceId/flashcards", async (req, res) => {
       .eq("resource_id", resourceId)
       .single();
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        return sendError(
-          res,
-          {
-            message: "Flashcards not found",
-            statusCode: 404,
-            code: "NOT_FOUND",
-            hint: "Generate flashcards for this resource first.",
-          },
-          404,
-        );
-      }
-      throw error;
-    }
-
-    if (!flashcards) {
-      return sendError(
-        res,
-        {
-          message: "Flashcards not found",
-          statusCode: 404,
-          code: "NOT_FOUND",
-          hint: "Generate flashcards for this resource first.",
-        },
-        404,
-      );
+    if (error || !flashcards) {
+      return res.status(404).json({ error: "Flashcards not found" });
     }
 
     res.json({
@@ -1720,33 +1680,8 @@ app.get("/api/resources/:resourceId/extracted-content", async (req, res) => {
       .limit(1)
       .single();
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        return sendError(
-          res,
-          {
-            message: "Extracted content not found",
-            statusCode: 404,
-            code: "NOT_FOUND",
-            hint: "Upload or process a PDF for this resource first.",
-          },
-          404,
-        );
-      }
-      throw error;
-    }
-
-    if (!content) {
-      return sendError(
-        res,
-        {
-          message: "Extracted content not found",
-          statusCode: 404,
-          code: "NOT_FOUND",
-          hint: "Upload or process a PDF for this resource first.",
-        },
-        404,
-      );
+    if (error || !content) {
+      return res.status(404).json({ error: "Extracted content not found" });
     }
 
     res.json(content);
@@ -1769,6 +1704,7 @@ app.post("/api/upload/pdf", upload.array("file"), async (req, res) => {
           message: "No files uploaded",
           statusCode: 400,
           code: "VALIDATION_ERROR",
+          hint: "Select at least one PDF to upload.",
         },
         400,
       );
@@ -1815,6 +1751,7 @@ app.post("/api/upload/file", upload.array("file"), async (req, res) => {
           message: "No files uploaded",
           statusCode: 400,
           code: "VALIDATION_ERROR",
+          hint: "Select at least one file to upload.",
         },
         400,
       );
