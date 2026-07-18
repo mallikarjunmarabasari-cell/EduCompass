@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trash2, ExternalLink, ChevronDown, AlertTriangle, RefreshCw } from 'lucide-react';
-import { getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
+import { formatResourceLinkLabel, getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 import { AssignmentBadge } from './AssignmentBadge';
 import { EditResourceModal } from './EditResourceModal';
@@ -170,23 +170,7 @@ export function ResourceCard({
                 <div className="space-y-1">
                   {resource.urls.map((link, index) => {
                     const isYouTube = link.includes('youtube.com') || link.includes('youtu.be');
-                    const isPDF = link.includes('.pdf') || link.startsWith('/uploads/pdfs');
-                    const isRelativePath = link.startsWith('/');
-                    
-                    // Get hostname for absolute URLs, or filename for relative paths
-                    let displayName = link;
-                    try {
-                      if (!isRelativePath && !isPDF) {
-                        displayName = new URL(link).hostname || link;
-                      } else if (isPDF) {
-                        displayName = '📄 PDF';
-                      } else {
-                        displayName = link.split('/').pop() || link;
-                      }
-                    } catch (e) {
-                      // Fallback if URL parsing fails
-                      displayName = isPDF ? '📄 PDF' : link;
-                    }
+                    const displayName = formatResourceLinkLabel(link);
                     
                     return (
                       <div key={index} className="flex items-center gap-1">

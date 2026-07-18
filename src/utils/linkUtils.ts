@@ -163,6 +163,29 @@ export function resolveResourceUrl(resource: Pick<Resource, 'url' | 'urls'>, sel
   return resource.url || '';
 }
 
+export function formatResourceLinkLabel(link: string): string {
+  if (!link) return 'Resource';
+
+  if (link.includes('youtube.com') || link.includes('youtu.be')) {
+    return 'YouTube';
+  }
+
+  if (link.includes('.pdf') || link.startsWith('/uploads/pdfs')) {
+    return 'PDF';
+  }
+
+  const isRelativePath = link.startsWith('/');
+  if (isRelativePath) {
+    return link.split('/').filter(Boolean).pop() || 'Resource';
+  }
+
+  try {
+    return new URL(link).hostname.replace(/^www\./, '');
+  } catch {
+    return link;
+  }
+}
+
 function getUrlPath(url: string): string {
   try {
     return new URL(url).pathname.toLowerCase();

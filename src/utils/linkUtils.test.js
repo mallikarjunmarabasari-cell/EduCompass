@@ -12,6 +12,7 @@ import {
   buildThumbnailsByUrl,
   normalizeTagNames,
   resolveResourceUrl,
+  formatResourceLinkLabel,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -104,11 +105,17 @@ test("keeps the legacy PDF endpoint for PDF uploads", () => {
 
 test("formats upload failures into a readable message", () => {
   assert.equal(
-    extractUploadErrorMessage({ error: "No files uploaded", code: "VALIDATION_ERROR" }),
+    extractUploadErrorMessage({
+      error: "No files uploaded",
+      code: "VALIDATION_ERROR",
+    }),
     "No files uploaded",
   );
   assert.equal(
-    extractUploadErrorMessage({ error: "File type not supported", hint: "Try a PDF or text file instead." }),
+    extractUploadErrorMessage({
+      error: "File type not supported",
+      hint: "Try a PDF or text file instead.",
+    }),
     "File type not supported. Try a PDF or text file instead.",
   );
 });
@@ -170,6 +177,12 @@ test("normalizes mixed tag formats into trimmed, unique names", () => {
     ]),
     ["Alpha", "beta", "Gamma"],
   );
+});
+
+test("formats resource links into compact display labels", () => {
+  assert.equal(formatResourceLinkLabel("https://www.youtube.com/watch?v=dQw4w9WgXcQ"), "YouTube");
+  assert.equal(formatResourceLinkLabel("/uploads/pdfs/notes.pdf"), "PDF");
+  assert.equal(formatResourceLinkLabel("https://example.com/guide"), "example.com");
 });
 
 test("prefers the selected resource URL when present, otherwise falls back to the first available link", () => {
