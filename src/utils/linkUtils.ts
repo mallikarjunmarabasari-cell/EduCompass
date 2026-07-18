@@ -72,22 +72,16 @@ export function getUploadRoute(fileName: string): string {
   return fileName.toLowerCase().endsWith('.pdf') ? '/api/upload/pdf' : '/api/upload/file';
 }
 
-export function extractUploadedFileUrl(response: {
-  fileUrl?: string;
-  path?: string;
-  filePath?: string;
-  files?: Array<{ fileUrl?: string; path?: string; filePath?: string }> | undefined;
-}): string | null {
-  const directPath = response.fileUrl || response.path || response.filePath;
-  if (directPath) {
-    return directPath;
+export function extractUploadedFileUrl(response: { fileUrl?: string; url?: string; files?: Array<{ fileUrl?: string; url?: string }> | undefined }): string | null {
+  const directUrl = response.fileUrl || response.url;
+  if (directUrl) {
+    return directUrl;
   }
 
   if (Array.isArray(response.files)) {
-    const firstFile = response.files[0];
-    const firstPath = firstFile?.fileUrl || firstFile?.path || firstFile?.filePath;
-    if (firstPath) {
-      return firstPath;
+    const firstEntry = response.files[0];
+    if (firstEntry?.fileUrl || firstEntry?.url) {
+      return firstEntry.fileUrl || firstEntry.url || null;
     }
   }
 

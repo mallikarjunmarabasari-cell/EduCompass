@@ -113,12 +113,14 @@ test("extracts a file URL from either single-file or multi-file upload responses
     "/uploads/pdfs/archive.zip",
   );
   assert.equal(
-    extractUploadedFileUrl({ path: "/uploads/files/notes.txt" }),
-    "/uploads/files/notes.txt",
+    extractUploadedFileUrl({ url: "/uploads/pdfs/notes.pdf" }),
+    "/uploads/pdfs/notes.pdf",
   );
   assert.equal(
-    extractUploadedFileUrl({ filePath: "/uploads/files/solution.py" }),
-    "/uploads/files/solution.py",
+    extractUploadedFileUrl({
+      files: [{ url: "/uploads/pdfs/data.csv" }],
+    }),
+    "/uploads/pdfs/data.csv",
   );
 });
 
