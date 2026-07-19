@@ -1,5 +1,12 @@
 import { useState } from 'react';
 import { ChevronDown, Sparkles, Loader } from 'lucide-react';
+import {
+  getAISummaryActionLabel,
+  getAISummaryEmptyStateMessage,
+  getAISummaryHeading,
+  getAISummaryKeyPointsHeading,
+  getAISummaryLoadingMessage,
+} from '../../utils/linkUtils';
 
 interface AISummaryData {
   summary: string;
@@ -46,10 +53,10 @@ export function AISummaryPanel({
           className="w-full flex items-center gap-2 text-xs text-yellow-400 hover:text-yellow-500 disabled:opacity-50 font-semibold"
         >
           <Sparkles size={14} />
-          Generate AI Summary
+          {getAISummaryActionLabel(isLoading)}
         </button>
         <p className="text-[11px] leading-5 text-gray-500 dark:text-gray-400">
-          Add some content or upload a file to generate a quick summary and key points.
+          {getAISummaryEmptyStateMessage()}
         </p>
       </div>
     );
@@ -67,7 +74,7 @@ export function AISummaryPanel({
       >
         <div className="flex items-center gap-2">
           <Sparkles size={14} />
-          {isLoading ? 'Generating Summary...' : 'AI Summary'}
+          {isLoading ? getAISummaryActionLabel(true) : getAISummaryHeading()}
         </div>
         <ChevronDown
           size={14}
@@ -80,7 +87,7 @@ export function AISummaryPanel({
           {isLoading ? (
             <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
               <Loader size={12} className="animate-spin" />
-              Generating AI content...
+              {getAISummaryLoadingMessage()}
             </div>
           ) : (
             <>
@@ -95,7 +102,7 @@ export function AISummaryPanel({
 
               {displayKeyPoints && displayKeyPoints.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Key Points:</p>
+                  <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{getAISummaryKeyPointsHeading()}:</p>
                   <ul className="space-y-1">
                     {displayKeyPoints.map((point, idx) => (
                       <li key={idx} className="text-xs text-gray-600 dark:text-gray-400 flex gap-2">

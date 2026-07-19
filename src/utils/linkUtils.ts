@@ -204,6 +204,26 @@ export function formatResourceLinkHint(link: string): string {
   return 'Website link';
 }
 
+export function getAISummaryEmptyStateMessage(): string {
+  return 'Add some content or upload a file to generate a quick summary and key points.';
+}
+
+export function getAISummaryActionLabel(isLoading = false): string {
+  return isLoading ? 'Generating Summary...' : 'Generate AI Summary';
+}
+
+export function getAISummaryLoadingMessage(): string {
+  return 'Generating AI content...';
+}
+
+export function getAISummaryHeading(): string {
+  return 'AI Summary';
+}
+
+export function getAISummaryKeyPointsHeading(): string {
+  return 'Key Points';
+}
+
 function getUrlPath(url: string): string {
   try {
     return new URL(url).pathname.toLowerCase();
