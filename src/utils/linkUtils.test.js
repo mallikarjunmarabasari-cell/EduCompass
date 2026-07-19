@@ -20,6 +20,7 @@ import {
   getAISummaryHeading,
   getAISummaryKeyPointsHeading,
   formatResourceStatusLabel,
+  getAISummaryButtonHint,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -222,6 +223,13 @@ test("formats resource status labels for a friendlier UI", () => {
   assert.equal(formatResourceStatusLabel("todo"), "To do");
   assert.equal(formatResourceStatusLabel("in-progress"), "In progress");
   assert.equal(formatResourceStatusLabel("completed"), "Completed");
+});
+
+test("offers a concise empty-state helper hint for AI generation", () => {
+  assert.equal(
+    getAISummaryButtonHint(),
+    "Start generating a summary from this resource",
+  );
 });
 
 test("keeps the AI helper text concise for empty summaries", () => {

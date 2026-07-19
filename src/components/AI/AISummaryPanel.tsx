@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, Sparkles, Loader } from 'lucide-react';
 import {
   getAISummaryActionLabel,
+  getAISummaryButtonHint,
   getAISummaryEmptyStateMessage,
   getAISummaryHeading,
   getAISummaryKeyPointsHeading,
@@ -51,6 +52,7 @@ export function AISummaryPanel({
           onClick={onGenerate}
           disabled={isLoading}
           className="w-full flex items-center gap-2 text-xs text-yellow-400 hover:text-yellow-500 disabled:opacity-50 font-semibold"
+          title={getAISummaryButtonHint()}
         >
           <Sparkles size={14} />
           {getAISummaryActionLabel(isLoading)}

@@ -236,6 +236,10 @@ export function formatResourceStatusLabel(status: string): string {
   }
 }
 
+export function getAISummaryButtonHint(): string {
+  return 'Start generating a summary from this resource';
+}
+
 function getUrlPath(url: string): string {
   try {
     return new URL(url).pathname.toLowerCase();
