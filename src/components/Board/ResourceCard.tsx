@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trash2, ExternalLink, ChevronDown, AlertTriangle, RefreshCw } from 'lucide-react';
-import { formatResourceLinkLabel, getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
+import { formatResourceLinkHint, formatResourceLinkLabel, getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 import { AssignmentBadge } from './AssignmentBadge';
 import { EditResourceModal } from './EditResourceModal';
@@ -171,6 +171,7 @@ export function ResourceCard({
                   {resource.urls.map((link, index) => {
                     const isYouTube = link.includes('youtube.com') || link.includes('youtu.be');
                     const displayName = formatResourceLinkLabel(link);
+                    const hintText = formatResourceLinkHint(link);
                     
                     return (
                       <div key={index} className="flex items-center gap-1">
@@ -182,7 +183,7 @@ export function ResourceCard({
                               setShowYoutubePreview(true);
                             }}
                             className="flex-1 text-left text-xs px-2 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition flex items-center gap-1"
-                            title="Click to preview"
+                            title={`Preview ${hintText}`}
                           >
                             <span className="text-xs">▶</span>
                             <span className="truncate">YouTube</span>
@@ -192,7 +193,7 @@ export function ResourceCard({
                             type="button"
                             onClick={() => setSelectedResourceUrl(link)}
                             className="flex-1 text-left text-xs px-2 py-1 bg-blue-600/20 text-blue-400 rounded hover:bg-blue-600/30 transition truncate"
-                            title={link}
+                            title={`${hintText}: ${link}`}
                           >
                             {displayName}
                           </button>

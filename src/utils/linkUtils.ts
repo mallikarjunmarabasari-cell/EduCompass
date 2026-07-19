@@ -186,6 +186,24 @@ export function formatResourceLinkLabel(link: string): string {
   }
 }
 
+export function formatResourceLinkHint(link: string): string {
+  if (!link) return 'Resource link';
+
+  if (link.includes('youtube.com') || link.includes('youtu.be')) {
+    return 'YouTube video';
+  }
+
+  if (link.includes('.pdf') || link.startsWith('/uploads/pdfs')) {
+    return 'PDF file';
+  }
+
+  if (link.startsWith('/')) {
+    return 'Local file link';
+  }
+
+  return 'Website link';
+}
+
 function getUrlPath(url: string): string {
   try {
     return new URL(url).pathname.toLowerCase();

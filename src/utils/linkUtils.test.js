@@ -13,6 +13,7 @@ import {
   normalizeTagNames,
   resolveResourceUrl,
   formatResourceLinkLabel,
+  formatResourceLinkHint,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -189,6 +190,15 @@ test("formats resource links into compact display labels", () => {
     formatResourceLinkLabel("https://example.com/guide"),
     "example.com",
   );
+});
+
+test("describes the resource link type for better UI hints", () => {
+  assert.equal(
+    formatResourceLinkHint("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
+    "YouTube video",
+  );
+  assert.equal(formatResourceLinkHint("/uploads/pdfs/notes.pdf"), "PDF file");
+  assert.equal(formatResourceLinkHint("https://example.com/guide"), "Website link");
 });
 
 test("keeps the AI helper text concise for empty summaries", () => {
