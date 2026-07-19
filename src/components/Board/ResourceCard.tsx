@@ -337,7 +337,7 @@ export function ResourceCard({
             href={resolveResourceUrl(resource, selectedResourceUrl)}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition"
+            className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition flex items-center justify-center"
             title={getResourceLinkTitle(resolveResourceUrl(resource, selectedResourceUrl)) || `Open ${resource.title}`}
             aria-label={`Open ${resource.title} in a new tab`}
           >
