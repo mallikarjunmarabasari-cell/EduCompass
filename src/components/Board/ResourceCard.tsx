@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trash2, ExternalLink, ChevronDown, AlertTriangle, RefreshCw } from 'lucide-react';
-import { formatResourceLinkHint, formatResourceLinkLabel, formatResourceStatusLabel, getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
+import { formatResourceLinkHint, formatResourceLinkLabel, formatResourceStatusLabel, getCategoryColor, getResourceLinkTitle, resolveResourceUrl } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 import { AssignmentBadge } from './AssignmentBadge';
 import { EditResourceModal } from './EditResourceModal';
@@ -338,7 +338,7 @@ export function ResourceCard({
             target="_blank"
             rel="noopener noreferrer"
             className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition"
-            title={`Open ${resource.title}`}
+            title={getResourceLinkTitle(resolveResourceUrl(resource, selectedResourceUrl)) || `Open ${resource.title}`}
             aria-label={`Open ${resource.title}`}
           >
             <ExternalLink size={14} />

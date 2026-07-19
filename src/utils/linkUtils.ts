@@ -240,6 +240,17 @@ export function getAISummaryButtonHint(): string {
   return 'Start generating a summary from this resource';
 }
 
+export function getResourceLinkTitle(link: string): string {
+  if (!link) return 'Open resource';
+  if (link.includes('.pdf') || link.startsWith('/uploads/pdfs')) {
+    return 'Open PDF';
+  }
+  if (link.includes('youtube.com') || link.includes('youtu.be')) {
+    return 'Open YouTube';
+  }
+  return 'Open website';
+}
+
 function getUrlPath(url: string): string {
   try {
     return new URL(url).pathname.toLowerCase();

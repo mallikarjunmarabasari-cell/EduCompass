@@ -21,6 +21,7 @@ import {
   getAISummaryKeyPointsHeading,
   formatResourceStatusLabel,
   getAISummaryButtonHint,
+  getResourceLinkTitle,
 } from "./linkUtils.ts";
 
 test("prefers the inferred file category when a file upload is detected", () => {
@@ -205,7 +206,10 @@ test("describes the resource link type for better UI hints", () => {
     "YouTube video",
   );
   assert.equal(formatResourceLinkHint("/uploads/pdfs/notes.pdf"), "PDF file");
-  assert.equal(formatResourceLinkHint("https://example.com/guide"), "Website link");
+  assert.equal(
+    formatResourceLinkHint("https://example.com/guide"),
+    "Website link",
+  );
 });
 
 test("returns compact copy helpers for the AI summary panel", () => {
@@ -230,6 +234,12 @@ test("offers a concise empty-state helper hint for AI generation", () => {
     getAISummaryButtonHint(),
     "Start generating a summary from this resource",
   );
+});
+
+test("builds a friendly fallback title for resource links", () => {
+  assert.equal(getResourceLinkTitle("https://example.com/guide"), "Open website");
+  assert.equal(getResourceLinkTitle("/uploads/pdfs/notes.pdf"), "Open PDF");
+  assert.equal(getResourceLinkTitle(""), "Open resource");
 });
 
 test("keeps the AI helper text concise for empty summaries", () => {
