@@ -339,7 +339,7 @@ export function ResourceCard({
             rel="noopener noreferrer"
             className="px-3 py-1 bg-yellow-400/20 text-yellow-400 rounded text-xs font-medium hover:bg-yellow-400/30 transition"
             title={getResourceLinkTitle(resolveResourceUrl(resource, selectedResourceUrl)) || `Open ${resource.title}`}
-            aria-label={`Open ${resource.title}`}
+            aria-label={`Open ${resource.title} in a new tab`}
           >
             <ExternalLink size={14} />
           </a>
