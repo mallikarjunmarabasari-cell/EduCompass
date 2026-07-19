@@ -224,6 +224,18 @@ export function getAISummaryKeyPointsHeading(): string {
   return 'Key Points';
 }
 
+export function formatResourceStatusLabel(status: string): string {
+  switch (status) {
+    case 'in-progress':
+      return 'In progress';
+    case 'completed':
+      return 'Completed';
+    case 'todo':
+    default:
+      return 'To do';
+  }
+}
+
 function getUrlPath(url: string): string {
   try {
     return new URL(url).pathname.toLowerCase();

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Trash2, ExternalLink, ChevronDown, AlertTriangle, RefreshCw } from 'lucide-react';
-import { formatResourceLinkHint, formatResourceLinkLabel, getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
+import { formatResourceLinkHint, formatResourceLinkLabel, formatResourceStatusLabel, getCategoryColor, resolveResourceUrl } from '../../utils/linkUtils';
 import type { Resource } from '../../types';
 import { AssignmentBadge } from './AssignmentBadge';
 import { EditResourceModal } from './EditResourceModal';
@@ -310,7 +310,7 @@ export function ResourceCard({
               disabled={isReadOnly}
               aria-label={`Change status for ${resource.title}`}
             >
-              <span className="capitalize">{resource.status}</span>
+              <span className="capitalize">{formatResourceStatusLabel(resource.status)}</span>
               <ChevronDown size={14} />
             </button>
             {showStatusMenu && !isReadOnly && (
