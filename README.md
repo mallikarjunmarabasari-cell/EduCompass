@@ -142,7 +142,7 @@ curl -X POST \
       "question": "What is the main topic?",
       "answer": "The main topic is..."
     }
-    // ... 4 more Q&A pairs
+    
   ]
 }
 ```
